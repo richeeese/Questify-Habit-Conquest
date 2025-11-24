@@ -16,6 +16,8 @@ public class Player {
     private int dodgeCharges; 
     private final int maxDodgeCharges = 3; 
 
+    private String playerSprite;
+
     private int str; // Strength (Combat Damage, Max HP scaling)
     private int def; // Defense (Damage Reduction)
     private int intel; // Intelligence (EXP Multiplier, Max Mana scaling)
@@ -137,10 +139,22 @@ public class Player {
     }
     public void setDef(int def) { this.def = def; }
     public void setIntel(int intel) { 
-        this.intel = intel; 
+        this.intel = intel;  
         recalculateDerivedStats(); 
     }
     public void setDex(int dex) { this.dex = dex; }
+
+    public void setPlayerSprite(int choice) {
+        if (choice == 1) {
+            this.playerSprite = "";
+        } else if (choice == 2) {
+            this.playerSprite = "";
+        }
+    }
+
+    public String getPlayerSprite() {
+        return this.playerSprite;
+    }
     
     @Override
     public String toString() {
