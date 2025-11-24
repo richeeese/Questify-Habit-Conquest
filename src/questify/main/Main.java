@@ -2,6 +2,7 @@ package main;
 
 // Import necessary classes from other packages
 import models.Player;
+import logic.SaveManager;
 import logic.TaskManager;
 import logic.GameEngine;
 import ui.ConsoleMenu;
