@@ -1,29 +1,25 @@
 package main;
 
-import models.*;
-import logic.*;
-import ui.*;
-import java.util.*;
+import logic.GameEngine;
+import ui.ConsoleMenu;
 
 public class Main {
-	public static void main(String[] args) {
-        // start screen ui using ascii
 
-        // initialize and get a player name
-        Scanner input = new Scanner(System.in);
-        System.out.print("Enter your player name: ");
-        Player player = new Player(input.nextLine());
+    public static void main(String[] args) {
+        System.out.println("Initializing Questify Systems...");
 
-        // task manager init
-        TaskManager taskManager = new TaskManager(player);
+        // 1. Create the Logic Layer (The Brains)
+        // This sets up the Player, TaskManager, and internal math.
+        GameEngine engine = new GameEngine();
 
-        GameEngine gameEngine = new GameEngine(player, taskManager);
+        // 2. Create the UI Layer (The Face)
+        // We pass the 'engine' to the menu so the UI can talk to the Logic.
+        ConsoleMenu menu = new ConsoleMenu(engine);
 
-        ConsoleMenu menu = new ConsoleMenu(player, taskManager, gameEngine); // Initialize the console menu
-        menu.start(); // Start the menu interaction
+        // 3. Start the Application Loop
+        // This gives control to the ConsoleMenu, which will loop until the user exits.
+        menu.startMenu();
 
-        System.out.println("Exiting Questify. Goodbye, " + player.getName() + "!");
-
-        input.close();
+        System.out.println("System Shutdown. See you next time!");
     }
 }
