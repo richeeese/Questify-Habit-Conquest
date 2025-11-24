@@ -1,7 +1,7 @@
 package ui;
 
 public interface GameUI {
-    public void start();
-    public void displayMessage(String msg);
-    public String promptUser(String prompt);
+    public void startMenu();
+    public void characterCreation();
+    public String handleEndDay();
 }
