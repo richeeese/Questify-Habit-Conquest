@@ -9,7 +9,7 @@ public class Boss {
     private int defense;
 
     public Boss(int level) {
-        this.name = "The Level " + level + " Procrastination Daemon";
+        this.name = "The Level " + level + " Boss";
         this.maxHp = 10 + (level * 5); // Boss HP scales with level
         this.currHp = this.maxHp;
         this.expReward = level * 10;
@@ -35,4 +35,9 @@ public class Boss {
     public int getMaxHp() { return maxHp; }
     public int getExpReward() { return expReward; }
     public int getAttackPower() { return attackPower; }
+
+    public void setName(String bossName) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setName'");
+    }
 }

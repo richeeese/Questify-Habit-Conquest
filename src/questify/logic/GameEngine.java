@@ -4,14 +4,13 @@ import models.Player;
 import models.Task;
 import models.DailyTask;
 import models.Boss;
+//ignore
 
 public class GameEngine {
 
     private Player player;
     private TaskManager taskManager;
     private Boss currentBoss;
-    // NOTE: isBossQuestActive is no longer strictly necessary since we check if the boss is defeated/null
-    // private boolean isBossQuestActive = true; 
 
     public GameEngine(Player player, TaskManager taskManager) {
         this.player = player;
@@ -150,14 +149,42 @@ public class GameEngine {
         System.out.println("*** Boss Rewards Processed. ***");
     }
     
-    // Checks if a new boss should be created (every 10 levels)
+    // Boss Spawning Logic (Corrected switch to use Java 8-11 syntax for wider compatibility)
     private void checkBossSpawn() {
-        // Bosses appear at level 10, 20, 30, etc.
-        if (player.getLevel() > 1 && player.getLevel() % 10 == 0) {
-            int bossLevel = player.getLevel();
-            this.currentBoss = new Boss(bossLevel);
+        int bossLevel = player.getLevel();
+
+        // Bosses only spawn on levels 10, 20, 30, etc. (and only if the player is > 1)
+        if (bossLevel > 1 && bossLevel % 10 == 0) {
+            this.currentBoss = new Boss(bossLevel); // Instantiate the base boss
+
+            // Custom Naming and Trait Logic
+            String bossName;
+            
+            switch (bossLevel) {
+                case 10:
+                    bossName = "The Procrastination Daemon";
+                    //this.currentBoss.setAttackPower(this.currentBoss.getAttackPower() + 5); // Example unique trait
+                    break;
+                case 20:
+                    bossName = "The Siren of Distraction";
+                    break;
+                case 30:
+                    bossName = "The Fog of Burnout";
+                    break;
+                case 40:
+                    bossName = "The Perfectionist Hydra";
+                    break;
+                case 50:
+                    bossName = "The Time Sink Kraken";
+                    break;
+                default:
+                    // If the player somehow levels past 50 in increments of 10
+                    bossName = "The Level " + bossLevel + " Overwhelming Task";
+                    break;
+            }
+
             System.out.println("\n*** 🚨 New Threat Emerges! 🚨 ***");
-            System.out.println("A Level " + bossLevel + " Boss, " + currentBoss.getName() + ", has appeared! Defeat it!");
+            System.out.println("A Level " + bossLevel + " Boss, " + bossName + ", has appeared! Defeat it!");
         }
     }
     
