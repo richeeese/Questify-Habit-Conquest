@@ -1,4 +1,4 @@
-package main;
+package main; // ignore
 
 import logic.GameEngine;
 import ui.ConsoleMenu;
