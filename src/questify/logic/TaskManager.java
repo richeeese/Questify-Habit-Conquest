@@ -13,34 +13,26 @@ public class TaskManager {
 
     public TaskManager(Player player) {
         this.allTasks = new ArrayList<>();
-        addInitialTasks();
-    }
-
-    private void addInitialTasks() {
-        addTask("Wake up by 8 AM", "Easy");
-        addDailyTask("Read for 30 minutes", "Medium");
-        addDailyTask("Exercise for 1 hour", "Hard");
-        addTask("Finish Java Core Module", "Hard");
-        addTask("Prepare presentation slides", "Medium");
-        addTask("Clean out email inbox", "Easy");
+        // Default tasks removed as requested. Game starts empty.
     }
 
     // --- Public Task Management Methods ---
 
-    // Overloaded to accept objects (used by initialization)
-    public void addTask(Task task) { allTasks.add(task); } 
-    
-    // Overloaded to create and add base Task (To-Do)
+    public void addTask(Task task) {
+        allTasks.add(task);
+    }
+
     public void addTask(String description, String difficulty) {
         this.allTasks.add(new Task(description, difficulty));
     }
-    
-    // Creates and adds DailyTask
+
     public void addDailyTask(String description, String difficulty) {
         this.allTasks.add(new DailyTask(description, difficulty));
     }
 
-    public List<Task> getAllTasks() { return allTasks; }
+    public List<Task> getAllTasks() {
+        return allTasks;
+    }
 
     public Task getTaskByIndex(int index) {
         if (index >= 0 && index < allTasks.size()) {
@@ -57,8 +49,7 @@ public class TaskManager {
         }
         return null;
     }
-    
-    // NEW: Removes a To-Do Task
+
     public void removeTask(int index) {
         if (index >= 0 && index < allTasks.size()) {
             Task task = allTasks.get(index);
@@ -69,7 +60,7 @@ public class TaskManager {
                 System.out.println("🗑️ To-Do Quest removed: " + task.getDescription());
             }
         } else {
-            System.out.println("Invalid Quest Number for removal.");
+            System.out.println("Invalid Quest Number.");
         }
     }
 
@@ -83,14 +74,13 @@ public class TaskManager {
 
     // --- End-of-Day Maintenance ---
     public void resetDailyTasks() {
-        // 1. Run maintenance on all Dailies (resets completion, updates streak)
         for (Task task : allTasks) {
             if (task instanceof DailyTask) {
                 ((DailyTask) task).endDayMaintenance();
             }
         }
-        
-        // 2. Cleanup: Remove completed To-dos (base Task objects)
+
+        // Cleanup: Remove completed To-dos
         allTasks.removeIf(t -> !(t instanceof DailyTask) && t.isCompleted());
     }
 }
