@@ -20,6 +20,10 @@ public class Player {
     private int intel; // exp gains
     private int dex; // dodge chance
 
+    // ------ Dodge Charge ------
+    private int dodgeCharges;
+    private int maxDodgeCharges;
+
     public Player(String name) {
         this.name = name;
         this.level = 1;
@@ -31,6 +35,8 @@ public class Player {
         this.def = 10;
         this.intel = 10;
         this.dex = 10;
+        this.maxDodgeCharges = 1;
+        this.dodgeCharges = this.maxDodgeCharges;
     }
 
     // ------ Getters ------
@@ -68,7 +74,7 @@ public class Player {
 
     public int getMaxMana() {
         return maxMana;
-    }  
+    }
 
     public int getStr() {
         return str;
@@ -108,5 +114,23 @@ public class Player {
         this.statPoints += points;
     }
 
-    
+    public int getDodgeCharges() {
+        return dodgeCharges;
+    }
+
+    public boolean hasDodgeAvailable() {
+        return dodgeCharges > 0;
+    }
+
+    public void decrementDodge() {
+        if (dodgeCharges > 0) {
+            dodgeCharges--;
+        }
+    }
+
+    public void refreshDodges() {
+        // Reset to max at start of new day
+        this.dodgeCharges = this.maxDodgeCharges;
+    }
+
 }
