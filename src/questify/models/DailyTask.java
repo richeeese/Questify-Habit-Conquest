@@ -1,4 +1,4 @@
-package logic;
+package models;
 
 // 'extends' to inherit from Task 
 public class DailyTask extends Task { 

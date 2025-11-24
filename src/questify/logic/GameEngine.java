@@ -1,5 +1,5 @@
 package logic;
 
-public class GameManager {
+public class GameEngine {
     
 }
