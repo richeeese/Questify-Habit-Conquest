@@ -5,7 +5,7 @@ public class Boss {
     private int currHp;
     private int maxHp;
     private int expReward;
-    private int attackPower; // NEW: Required for active combat
+    private int attackPower; 
     private int defense;
 
     public Boss(int level) {

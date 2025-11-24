@@ -11,7 +11,8 @@ public class GameEngine {
     private Player player;
     private TaskManager taskManager;
     private Boss currentBoss;
-    private boolean isBossQuestActive = true;
+    // NOTE: isBossQuestActive is no longer strictly necessary since we check if the boss is defeated/null
+    // private boolean isBossQuestActive = true; 
 
     public GameEngine(Player player, TaskManager taskManager) {
         this.player = player;
@@ -20,27 +21,58 @@ public class GameEngine {
         this.currentBoss = new Boss(10); 
     }
 
-    public Boss getCurrentBoss() { return currentBoss;
-    }
+    // --- Core Getters for UI ---
+    public Player getPlayer() { return player; }
+    public TaskManager getTaskManager() { return taskManager; }
+    public Boss getCurrentBoss() { return currentBoss; }
 
-    // Task completion now ONLY grants EXP and checks for level up (passive combat removed)
+    // Task completion now ONLY grants EXP and checks for level up
     public void playerCompletesTask(Task completedTask) {
         if (completedTask == null || !completedTask.isCompleted()) return;
         
         int baseExp = completedTask.getExpReward();
-        // Note: Intel is used as a direct multiplier for EXP gain
+        // Intel is used as a direct multiplier for EXP gain
         int finalExp = baseExp * player.getIntel(); 
 
         if (player.addExp(finalExp)) handleLevelUp();
     }
     
-    // NEW: Active Combat Method
-    public void initiateCombat() {
-        if (player.isDefeated()) {
-            System.out.println("\n💔 You are defeated! You must recover before fighting again.");
+    // NEW: Stat Allocation (called by ConsoleMenu)
+    public void upgradePlayerStat(String stat) {
+        if (player.getStatPoints() <= 0) {
+            System.out.println("No stat points available.");
             return;
         }
-        if (currentBoss == null || !isBossQuestActive || currentBoss.isDefeated()) {
+        
+        switch (stat.toLowerCase()) {
+            case "str":
+                player.setStr(player.getStr() + 1);
+                break;
+            case "def": 
+                player.setDef(player.getDef() + 1);
+                break;
+            case "int":
+            case "intel":
+                player.setIntel(player.getIntel() + 1);
+                break;
+            case "dex":
+                player.setDex(player.getDex() + 1);
+                break;
+            default:
+                System.out.println("Invalid stat name. Points not spent.");
+                return; // Exit without spending points
+        }
+        player.setStatPoints(player.getStatPoints() - 1);
+        System.out.println("✨ Stat Upgraded! Points remaining: " + player.getStatPoints());
+    }
+    
+    // Active Combat Method
+    public void initiateCombat() {
+        if (player.isDefeated()) {
+            System.out.println("\n💔 You are defeated! You must rest before fighting again.");
+            return;
+        }
+        if (currentBoss == null || currentBoss.isDefeated()) {
             System.out.println("\nNothing to fight! No boss is currently active.");
             return;
         }
@@ -54,7 +86,7 @@ public class GameEngine {
         if (Math.random() < hitChance) {
             int playerDamage = player.getStr();
             int damageDealt = currentBoss.takeDamage(playerDamage);
-            System.out.println("    ➡️ Your attack HITS! You dealt " + damageDealt + " damage.");
+            System.out.println("    ➡️ Your attack HITS! You dealt " + damageDealt + " damage.");
 
             // 1.1 Check Boss Defeat
             if (currentBoss.isDefeated()) { 
@@ -62,27 +94,25 @@ public class GameEngine {
                 return; // End combat immediately
             }
         } else {
-            System.out.println("    ➡️ Your attack MISSES! The boss dodges your strike.");
+            System.out.println("    ➡️ Your attack MISSES! The boss dodges your strike.");
         }
 
         // 2. BOSS ATTACK PHASE
-        // Boss hits player
-        System.out.println("    ⬅️ " + currentBoss.getName() + " attacks you!");
+        System.out.println("    ⬅️ " + currentBoss.getName() + " attacks you!");
         
         // Player dodge chance based on DEX: 10% base + 1% per 10 DEX points
         double dodgeChance = 0.10 + (player.getDex() / 1000.0);
         
         if (Math.random() < dodgeChance) {
-            System.out.println("    🛡️ You DODGE! No damage taken.");
+            System.out.println("    🛡️ You DODGE! No damage taken.");
         } else {
             int bossAttack = currentBoss.getAttackPower();
             player.takeDamage(bossAttack);
-            System.out.println("    💔 You took " + bossAttack + " damage. HP: " + player.getCurrHp() + "/" + player.getMaxHp());
+            System.out.println("    💔 You took " + bossAttack + " damage. HP: " + player.getCurrHp() + "/" + player.getMaxHp());
             
             // 2.1 Check Player Defeat
             if (player.isDefeated()) {
                 System.out.println("💀 GAME OVER. You were defeated by " + currentBoss.getName() + ".");
-                this.isBossQuestActive = false;
                 return;
             }
         }
@@ -90,11 +120,9 @@ public class GameEngine {
         System.out.println("Combat Round End. Boss HP: " + currentBoss.getCurrHp());
     }
     
-    // Handler for a successful level up (from EXP)
+    // Handler for a successful level up (from EXP or Boss reward)
     private void handleLevelUp() {
         System.out.println("\n✨ LEVEL UP! You are now Level " + player.getLevel() + "!");
-        if (player.getLevel() % 5 == 0) player.setStatPoints(player.getStatPoints() + 2);
-        else player.setStatPoints(player.getStatPoints() + 1);
         System.out.println("You have " + player.getStatPoints() + " points to allocate.");
         
         // Check for new boss spawn condition
@@ -107,24 +135,19 @@ public class GameEngine {
 
         // 1. Grant Boss EXP (may trigger a regular level up and call handleLevelUp())
         if (player.addExp(currentBoss.getExpReward())) handleLevelUp();
-        System.out.println("   + " + currentBoss.getExpReward() + " Bonus EXP!");
+        System.out.println("   + " + currentBoss.getExpReward() + " Bonus EXP!");
 
         // 2. Force +1 Level (Boss Reward)
         player.gainLevel();
         
-        // 3. Grant normal stat points for the forced level
-        System.out.println("\n✨ BONUS LEVEL UP! You are now Level " + player.getLevel() + "!");
-        int normalStatBonus = (player.getLevel() % 5 == 0) ? 2 : 1;
-        player.setStatPoints(player.getStatPoints() + normalStatBonus);
-        
-        // 4. Grant bonus +3 Stat Points (Boss Reward)
+        // 3. Grant bonus +3 Stat Points (Boss Reward)
         player.setStatPoints(player.getStatPoints() + 3);
         
-        System.out.println("   + 1 Bonus Level!");
-        System.out.println("   + 3 Bonus Stat Points!");
+        System.out.println("\n✨ BONUS LEVEL UP! You are now Level " + player.getLevel() + "!");
+        System.out.println("   + 3 Bonus Stat Points!");
         System.out.println("You have " + player.getStatPoints() + " points to allocate.");
 
-        this.isBossQuestActive = false;
+        this.currentBoss = null;
         System.out.println("*** Boss Rewards Processed. ***");
     }
     
@@ -134,34 +157,43 @@ public class GameEngine {
         if (player.getLevel() > 1 && player.getLevel() % 10 == 0) {
             int bossLevel = player.getLevel();
             this.currentBoss = new Boss(bossLevel);
-            this.isBossQuestActive = true; 
             System.out.println("\n*** 🚨 New Threat Emerges! 🚨 ***");
-            System.out.println("A Level " + bossLevel + " Boss, " + currentBoss.getName() + ", has appeared!");
+            System.out.println("A Level " + bossLevel + " Boss, " + currentBoss.getName() + ", has appeared! Defeat it!");
         }
     }
-
-    public void endDay() {
-        System.out.println("\n--- 🌅 Day End Maintenance ---");
-        int totalDamage = 0;
-        int penalty = 5;
-
-        List<DailyTask> incompleteDailies = taskManager.getIncompleteDailyTasks();
-        for (DailyTask daily : incompleteDailies) {
-            // Player dodge chance based on DEX (10% base + 1% per 50 DEX points)
-            boolean dodged = (Math.random() < (0.10 + (player.getDex() / 500.0)));
-            if (!dodged) {
-                totalDamage += penalty;
-                System.out.println("❌ Failed Daily Task: " + daily.getDescription() + " - Taking " + penalty + " damage.");
-            } else System.out.println("💨 You dodged the penalty from: " + daily.getDescription());
+    
+    // NEW: End-of-Day Penalty Resolver (called for each failed task by ConsoleMenu)
+    public void resolveFailedTask(DailyTask daily, boolean usedDodgeCharge) {
+        int penalty = 5; // Base damage for failing a daily
+        
+        if (usedDodgeCharge) {
+            player.useDodgeCharge();
+            System.out.println("💨 Dodge Charge used! Penalty for '" + daily.getDescription() + "' avoided.");
+            return;
         }
+        
+        // Calculate the chance of naturally dodging the penalty damage (Passive DEX check)
+        // Dodge chance: 10% base + 1% per 50 DEX points
+        double passiveDodgeChance = 0.10 + (player.getDex() / 500.0);
 
-        if (totalDamage > 0) {
-            player.takeDamage(totalDamage);
-            System.out.println("💔 Total Penalty Damage Taken: " + totalDamage + ". HP: " + player.getCurrHp() + "/" + player.getMaxHp());
-            if (player.isDefeated()) System.out.println("💀 GAME OVER. Your hero was defeated.");
-        } else System.out.println("✅ All daily obligations met! No damage taken.");
-
+        if (Math.random() < passiveDodgeChance) {
+            System.out.println("💨 You passively dodged the penalty from: " + daily.getDescription());
+        } else {
+            player.takeDamage(penalty);
+            System.out.println("❌ Failed Daily Task: " + daily.getDescription() + " - Taking " + penalty + " damage. HP: " + player.getCurrHp() + "/" + player.getMaxHp());
+        }
+    }
+    
+    // NEW: Final Day Reset (called once by ConsoleMenu after all penalties)
+    public void completeDayReset() {
         taskManager.resetDailyTasks();
-        System.out.println("🌞 New Day starts! Daily tasks reset and streaks updated.");
+        
+        // Heal and replenish charges on rest
+        player.rest(); 
+        player.replenishDodgeCharge(1); // Give the player one dodge charge back
+
+        System.out.println("\n--- 🌞 New Day Begins! ---");
+        System.out.println("Daily tasks reset. You have been fully healed and regained 1 Dodge Charge.");
+        System.out.println("Current HP: " + player.getCurrHp() + "/" + player.getMaxHp());
     }
 }

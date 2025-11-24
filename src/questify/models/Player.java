@@ -1,18 +1,20 @@
 package models;
 
+// NOTE: No import java.util.UUID is needed here as this class does not generate a UUID.
+
 public class Player {
     private String name;
     private int level;
     private int statPoints;
-    private int currExp = 0;
-    private int maxExp = 20;
+    private int currExp;
+    private int maxExp;
     private int currHp;
-    private int maxHp = 50;
+    private int maxHp;
     private int currMana;
-    private int maxMana = 20;
+    private int maxMana;
     
-    private int dodgeCharges; // NEW: Resource for avoiding daily penalties
-    private final int maxDodgeCharges = 3; // Maximum charges allowed
+    private int dodgeCharges; 
+    private final int maxDodgeCharges = 3; 
 
     private int str; // Strength (Combat Damage, Max HP scaling)
     private int def; // Defense (Damage Reduction)
@@ -24,13 +26,37 @@ public class Player {
         this.level = 1;
         this.statPoints = 0;
         this.currExp = 0;
-        this.currHp = this.maxHp;
-        this.currMana = this.maxMana;
-        this.dodgeCharges = 1; // Start with one charge
+        
+        // Base Stats
         this.str = 10;
         this.def = 10;
         this.intel = 10;
         this.dex = 10;
+        
+        recalculateDerivedStats(); 
+        
+        this.currHp = this.maxHp;
+        this.currMana = this.maxMana;
+        this.dodgeCharges = 1; 
+    }
+    
+    // Recalculates HP and Mana when stats are updated or on level up
+    private void recalculateDerivedStats() {
+        // Derived HP and Mana based on STR and INTEL
+        int newMaxHp = 50 + (this.str * 2);
+        int newMaxMana = 20 + (this.intel * 1);
+        
+        // Adjust current HP/Mana safely when max changes
+        if (newMaxHp > this.maxHp) this.currHp += (newMaxHp - this.maxHp);
+        this.maxHp = newMaxHp;
+        this.currHp = Math.min(this.currHp, this.maxHp);
+        
+        if (newMaxMana > this.maxMana) this.currMana += (newMaxMana - this.maxMana);
+        this.maxMana = newMaxMana;
+        this.currMana = Math.min(this.currMana, this.maxMana);
+
+        // Update Max EXP for next level
+        this.maxExp = 20 + (this.level * 10);
     }
 
     public boolean addExp(int exp) {
@@ -43,7 +69,6 @@ public class Player {
         return leveledUp;
     }
 
-    // New method for forced level-up reward from Boss defeat
     public void gainLevel() {
         levelUp();
     }
@@ -51,21 +76,21 @@ public class Player {
     private void levelUp() {
         this.level++;
         this.currExp -= this.maxExp;
-        this.maxExp = 20 + (this.level * 10);
-        // Max HP/Mana increases on level up based on primary stats
-        this.maxHp = 50 + (this.str * 2);
-        this.maxMana = 20 + (this.intel * 1);
-        this.currMana = this.maxMana;
-        // HP is not fully restored on level up to keep combat consequences
+        
+        recalculateDerivedStats(); 
+        
+        // Grant stat points
+        this.statPoints += (this.level % 5 == 0) ? 2 : 1; 
     }
 
     public void takeDamage(int rawDamage) {
+        // Damage reduction based on DEF
         int actualDamage = Math.max(1, rawDamage - (this.def / 2));
         this.currHp -= actualDamage;
         if (this.currHp < 0) this.currHp = 0;
     }
     
-    // NEW: Fully restore HP/Mana for End Day reset
+    // Used for End Day reset
     public void rest() {
         this.currHp = this.maxHp;
         this.currMana = this.maxMana;
@@ -75,7 +100,7 @@ public class Player {
         return this.currHp <= 0;
     }
     
-    // --- New Dodge Charge Methods ---
+    // --- Dodge Charge Methods ---
     public boolean hasDodgeAvailable() {
         return this.dodgeCharges > 0;
     }
@@ -87,7 +112,7 @@ public class Player {
     public void replenishDodgeCharge(int amount) {
         this.dodgeCharges = Math.min(this.maxDodgeCharges, this.dodgeCharges + amount);
     }
-
+    
     // --- Getters and Setters ---
     public String getName() { return name; }
     public int getLevel() { return level; }
@@ -108,14 +133,12 @@ public class Player {
 
     public void setStr(int str) { 
         this.str = str; 
-        this.maxHp = 50 + (str * 2); // HP scales with STR
-        if (currHp > maxHp) currHp = maxHp;
+        recalculateDerivedStats(); 
     }
     public void setDef(int def) { this.def = def; }
     public void setIntel(int intel) { 
         this.intel = intel; 
-        this.maxMana = 20 + (intel * 1); // Mana scales with INTEL
-        if (currMana > maxMana) currMana = maxMana;
+        recalculateDerivedStats(); 
     }
     public void setDex(int dex) { this.dex = dex; }
     
