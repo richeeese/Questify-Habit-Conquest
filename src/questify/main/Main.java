@@ -14,10 +14,15 @@ public class Main {
         System.out.print("Enter your player name: ");
         Player player = new Player(input.nextLine());
 
-        ConsoleMenu menu = new ConsoleMenu(player); // Initialize the console menu
+        // task manager init
+        TaskManager taskManager = new TaskManager(player);
+
+        GameEngine gameEngine = new GameEngine(player, taskManager);
+
+        ConsoleMenu menu = new ConsoleMenu(player, taskManager, gameEngine); // Initialize the console menu
         menu.start(); // Start the menu interaction
 
-        
+        System.out.println("Exiting Questify. Goodbye, " + player.getName() + "!");
 
         input.close();
     }

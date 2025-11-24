@@ -24,7 +24,7 @@ public class Player {
         this.name = name;
         this.level = 1;
         this.statPoints = 0;
-        this.currExp = this.maxExp;
+        this.currExp = 0;
         this.currHp = this.maxHp;
         this.currMana = this.maxMana;
         this.str = 10;

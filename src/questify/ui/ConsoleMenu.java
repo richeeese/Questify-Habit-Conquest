@@ -2,14 +2,17 @@ package ui;
 
 import models.Player;
 import java.util.Scanner;
+import logic.TaskManager;
 
 public class ConsoleMenu {
     private Player activePlayer;
-    private Scanner;
+    private TaskManager taskManager;
+
+    private Scanner input;
 
     public ConsoleMenu (Player player) {
         this.activePlayer = player;
-        this.Scanner = new Scanner(System.in);
+        this.input = new Scanner(System.in);
     }
 
     
