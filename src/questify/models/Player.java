@@ -1,125 +1,155 @@
 package models;
 
 public class Player {
-    // ------ Player Attributes ------
-    private String name;
+
+    // --- Identity & Core Stats ---
+    private String username;
     private int level;
-    private int statPoints;
+    private int statPoints; // Points available for allocation
 
-    // ------ Core Attributes ------
-    private int currExp = 0;
-    private int maxExp = 20;
-    private int currHp;
-    private int maxHp = 50;
-    private int currMana;
-    private int maxMana = 20;
+    // --- Resources ---
+    private int currentHp;
+    private int maxHp;
+    private int currentMana;
+    private int maxMana;
 
-    // ------ Player Stats ------
-    private int str; // damage multiplier/adder
-    private int def; // damage reduction
-    private int intel; // exp gains
-    private int dex; // dodge chance
+    // --- Experience ---
+    private int currentExp;
+    private int expToNextLevel;
 
-    // ------ Dodge Charge ------
+    // --- Battle Stats ---
+    private int strength; // STR - Damage dealt
+    private int defense; // DEF - Damage taken reduction
+    private int intelligence; // INT - EXP multiplier
+    private int dexterity; // DEX - Dodge chance
+
+    // --- Dodge Resource ---
     private int dodgeCharges;
     private int maxDodgeCharges;
 
-    public Player(String name) {
-        this.name = name;
+    // ---------------------------------------------------------
+    // 🏗️ CONSTRUCTOR
+    // ---------------------------------------------------------
+    public Player(String username) {
+        this.username = username;
         this.level = 1;
         this.statPoints = 0;
-        this.currExp = 0;
-        this.currHp = this.maxHp;
-        this.currMana = this.maxMana;
-        this.str = 10;
-        this.def = 10;
-        this.intel = 10;
-        this.dex = 10;
+
+        // Base Stats
+        this.maxHp = 50;
+        this.currentHp = this.maxHp;
+        this.maxMana = 20;
+        this.currentMana = this.maxMana;
+
+        this.currentExp = 0;
+        this.expToNextLevel = 20; // Starting EXP requirement
+
+        // Attributes (Set to 10 as per your preference)
+        this.strength = 10;
+        this.defense = 10;
+        this.intelligence = 10;
+        this.dexterity = 10;
+
+        // Dodge Logic (1 Free Dodge per day)
         this.maxDodgeCharges = 1;
         this.dodgeCharges = this.maxDodgeCharges;
     }
 
-    // ------ Getters ------
-    public String getName() {
-        return name;
+    // ---------------------------------------------------------
+    // ⚔️ GAME LOGIC METHODS
+    // ---------------------------------------------------------
+
+    /**
+     * Adds EXP to the player.
+     * 
+     * @return true if the player leveled up (Engine uses this to trigger bonuses).
+     */
+    public boolean addExp(int amount) {
+        this.currentExp += amount;
+        System.out.println("✨ " + this.username + " gained " + amount + " EXP.");
+
+        // Check if we leveled up
+        if (this.currentExp >= this.expToNextLevel) {
+            levelUp();
+            return true;
+        }
+        return false;
     }
 
-    public int getLevel() {
-        return level;
+    private void levelUp() {
+        this.level++;
+        this.currentExp -= this.expToNextLevel; // Carry over excess EXP
+        this.expToNextLevel = (int) (this.expToNextLevel * 1.5); // Increase difficulty
+
+        // Restore HP/Mana on Level Up
+        this.currentHp = this.maxHp;
+        this.currentMana = this.maxMana;
+
+        System.out.println("🎉 LEVEL UP! You are now level " + this.level);
     }
 
-    public int getStatPoints() {
-        return statPoints;
+    public void takeDamage(int damage) {
+        // Simple damage reduction: Damage - (Defense / 2)
+        int effectiveDamage = damage - (this.defense / 2);
+
+        // Always take at least 1 damage unless it was a dodge (handled in Engine)
+        if (effectiveDamage < 1)
+            effectiveDamage = 1;
+
+        this.currentHp -= effectiveDamage;
+        if (this.currentHp < 0)
+            this.currentHp = 0;
+
+        System.out.println(
+                "💔 " + this.username + " took " + effectiveDamage + " damage. (HP: " + currentHp + "/" + maxHp + ")");
     }
 
-    public int getCurrExp() {
-        return currExp;
+    public boolean isDefeated() {
+        return this.currentHp <= 0;
     }
 
-    public int getMaxExp() {
-        return maxExp;
+    /**
+     * Allows the user to spend a stat point.
+     */
+    public boolean allocateStat(String stat) {
+        if (this.statPoints <= 0)
+            return false;
+
+        boolean success = true;
+        switch (stat.toLowerCase()) {
+            case "str":
+                this.strength++;
+                break;
+            case "def":
+                this.defense++;
+                break;
+            case "int":
+                this.intelligence++;
+                break;
+            case "dex":
+                this.dexterity++;
+                break;
+            default:
+                success = false;
+        }
+
+        if (success) {
+            this.statPoints--;
+            System.out.println("💪 Upgraded " + stat.toUpperCase() + "!");
+        }
+        return success;
     }
 
-    public int getCurrHp() {
-        return currHp;
-    }
+    // ---------------------------------------------------------
+    // 🛡️ DODGE CHARGE METHODS
+    // ---------------------------------------------------------
 
-    public int getMaxHp() {
-        return maxHp;
-    }
-
-    public int getCurrMana() {
-        return currMana;
-    }
-
-    public int getMaxMana() {
-        return maxMana;
-    }
-
-    public int getStr() {
-        return str;
-    }
-
-    public int getDef() {
-        return def;
-    }
-
-    public int getIntel() {
-        return intel;
-    }
-
-    public int getDex() {
-        return dex;
-    }
-
-    // ------ Setters ------
-    public void setCurrExp(int currExp) {
-        this.currExp = currExp;
-    }
-
-    public void setCurrHp(int currHp) {
-        this.currHp = currHp;
-    }
-
-    public void setCurrMana(int currMana) {
-        this.currMana = currMana;
-    }
-
-    // ------ Adders ------
-    public void addExp(int exp) {
-        this.currExp += exp;
-    }
-
-    public void addStatPoints(int points) {
-        this.statPoints += points;
+    public boolean hasDodgeAvailable() {
+        return dodgeCharges > 0;
     }
 
     public int getDodgeCharges() {
         return dodgeCharges;
-    }
-
-    public boolean hasDodgeAvailable() {
-        return dodgeCharges > 0;
     }
 
     public void decrementDodge() {
@@ -133,4 +163,71 @@ public class Player {
         this.dodgeCharges = this.maxDodgeCharges;
     }
 
+    // ---------------------------------------------------------
+    // 📤 GETTERS & SETTERS
+    // ---------------------------------------------------------
+
+    public String getUsername() {
+        return username;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public int getStatPoints() {
+        return statPoints;
+    }
+
+    public void setStatPoints(int p) {
+        this.statPoints = p;
+    }
+
+    public int getCurrentHp() {
+        return currentHp;
+    }
+
+    public int getMaxHp() {
+        return maxHp;
+    }
+
+    public int getCurrentMana() {
+        return currentMana;
+    }
+
+    public int getMaxMana() {
+        return maxMana;
+    }
+
+    public int getCurrentExp() {
+        return currentExp;
+    }
+
+    public int getExpToNextLevel() {
+        return expToNextLevel;
+    }
+
+    public int getStrength() {
+        return strength;
+    }
+
+    public int getDefense() {
+        return defense;
+    }
+
+    public int getIntelligence() {
+        return intelligence;
+    }
+
+    public int getDexterity() {
+        return dexterity;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "Name: %s | Lvl: %d | HP: %d/%d | EXP: %d/%d\nStats: [STR: %d] [DEF: %d] [INT: %d] [DEX: %d]\nDodges: %d | Points: %d",
+                username, level, currentHp, maxHp, currentExp, expToNextLevel,
+                strength, defense, intelligence, dexterity, dodgeCharges, statPoints);
+    }
 }

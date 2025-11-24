@@ -2,19 +2,24 @@ package models;
 
 public class Task {
 
+    // --- 1. ATTRIBUTES: Add the missing 'difficulty' field ---
     private String description;
     private boolean completed;
-    private String difficulty;
+    private String difficulty; // NEW: The difficulty string for this specific task
 
+    // --- 2. CONSTANTS: Define the reward values ---
     private final int expEasy = 5;
     private final int expMedium = 10;
     private final int expHard = 15;
 
+    // --- 3. CONSTRUCTOR: Correctly initializes all fields ---
     public Task(String description, String difficulty) {
         this.description = description;
         this.completed = false; // Task starts incomplete
         this.difficulty = difficulty.toLowerCase();
     }
+
+    // --- 4. METHODS: Implement Logic and Getters ---
 
     // Getter for the Task description
     public String getDescription() {
