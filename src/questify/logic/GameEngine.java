@@ -3,139 +3,164 @@ package logic;
 import models.Player;
 import models.Task;
 import models.DailyTask;
-// import com.questify.models.Boss; // Will be added when Boss class is ready
-// import com.questify.logic.CombatSystem; // Will be added when CombatSystem is ready
+import models.Boss;
 import java.util.List;
 
 public class GameEngine {
 
-    // --- State and Logic Dependencies ---
     private Player player;
     private TaskManager taskManager;
-    // private Boss currentBoss;
-    // private CombatSystem combatSystem;
+    private Boss currentBoss;
+    private boolean isBossQuestActive = true;
 
-    // Constructor: Initializes the primary components
-    public GameEngine() {
-        // Initialize Core Dependencies
-        this.player = new Player("QuestHero"); // Create the starting player
-        this.taskManager = new TaskManager();
-        // this.combatSystem = new CombatSystem(); // Initialize when ready
-        // this.currentBoss = new Boss("The Procrastinator", 500, 50); // Initialize
-        // Boss when ready
+    public GameEngine(Player player, TaskManager taskManager) {
+        this.player = player;
+        this.taskManager = taskManager;
+        // Start with the Level 10 Boss available immediately
+        this.currentBoss = new Boss(10); 
     }
 
-    // --- Public Getters for UI and Main ---
-
-    public Player getPlayer() {
-        return player;
+    public Boss getCurrentBoss() { return currentBoss;
     }
 
-    public TaskManager getTaskManager() {
-        return taskManager;
-    }
-
-    // ------------------------------------------------------------------
-    // ⚔️ CORE GAME LOOP METHODS
-    // ------------------------------------------------------------------
-
-    /**
-     * Handles the full reward/penalty processing when a user toggles a task to
-     * "complete."
-     * This is called by the UI when a user completes a task.
-     * 
-     * @param completedTask The Task object returned by
-     *                      TaskManager.toggleCompletion.
-     */
+    // Task completion now ONLY grants EXP and checks for level up (passive combat removed)
     public void playerCompletesTask(Task completedTask) {
-        // Only process if the task is now marked complete (toggled ON)
-        if (completedTask == null || !completedTask.isCompleted()) {
+        if (completedTask == null || !completedTask.isCompleted()) return;
+        
+        int baseExp = completedTask.getExpReward();
+        // Note: Intel is used as a direct multiplier for EXP gain
+        int finalExp = baseExp * player.getIntel(); 
+
+        if (player.addExp(finalExp)) handleLevelUp();
+    }
+    
+    // NEW: Active Combat Method
+    public void initiateCombat() {
+        if (player.isDefeated()) {
+            System.out.println("\n💔 You are defeated! You must recover before fighting again.");
+            return;
+        }
+        if (currentBoss == null || !isBossQuestActive || currentBoss.isDefeated()) {
+            System.out.println("\nNothing to fight! No boss is currently active.");
             return;
         }
 
-        // 1. Calculate Base EXP, applying the INT multiplier
-        int baseExp = completedTask.getExpReward();
-        int finalExp = baseExp * player.getIntelligence();
+        System.out.println("\n⚔️ You enter combat with " + currentBoss.getName() + " (HP: " + currentBoss.getCurrHp() + "/" + currentBoss.getMaxHp() + ")");
 
-        // 2. Grant EXP to the player
-        if (player.addExp(finalExp)) {
-            // Level up occurred inside player.addExp
-            handleLevelUp(); // Check for stat point bonuses
-        }
+        // 1. PLAYER ATTACK PHASE
+        // Player accuracy based on DEX: Max 80% base + 1% per 10 DEX points
+        double hitChance = 0.80 + (player.getDex() / 1000.0);
+        
+        if (Math.random() < hitChance) {
+            int playerDamage = player.getStr();
+            int damageDealt = currentBoss.takeDamage(playerDamage);
+            System.out.println("    ➡️ Your attack HITS! You dealt " + damageDealt + " damage.");
 
-        // 3. Boss Damage Logic (Will use CombatSystem later)
-        // if (currentBoss != null && isBossQuestActive) {
-        // int damage = player.getStrength();
-
-        // Apply streak bonus if it's a DailyTask
-        // if (completedTask instanceof DailyTask) {
-        // DailyTask daily = (DailyTask) completedTask;
-        // damage += daily.getStreakBonusDamage();
-        // }
-        // combatSystem.dealDamageToBoss(currentBoss, damage);
-        // }
-    }
-
-    /**
-     * Checks for stat point bonuses and notifies the UI/Player.
-     */
-    private void handleLevelUp() {
-        // Player model already increased level and reset HP/Mana
-
-        // Grant bonus stat points if level is a multiple of 5
-        if (player.getLevel() % 5 == 0) {
-            player.setStatPoints(player.getStatPoints() + 2); // Grant 2 bonus points
-            System.out.println("🌟 Level " + player.getLevel() + " Bonus! Gained 2 extra stat points.");
+            // 1.1 Check Boss Defeat
+            if (currentBoss.isDefeated()) { 
+                handleBossDefeat();
+                return; // End combat immediately
+            }
         } else {
-            player.setStatPoints(player.getStatPoints() + 1); // Grant 1 standard point
+            System.out.println("    ➡️ Your attack MISSES! The boss dodges your strike.");
         }
 
+        // 2. BOSS ATTACK PHASE
+        // Boss hits player
+        System.out.println("    ⬅️ " + currentBoss.getName() + " attacks you!");
+        
+        // Player dodge chance based on DEX: 10% base + 1% per 10 DEX points
+        double dodgeChance = 0.10 + (player.getDex() / 1000.0);
+        
+        if (Math.random() < dodgeChance) {
+            System.out.println("    🛡️ You DODGE! No damage taken.");
+        } else {
+            int bossAttack = currentBoss.getAttackPower();
+            player.takeDamage(bossAttack);
+            System.out.println("    💔 You took " + bossAttack + " damage. HP: " + player.getCurrHp() + "/" + player.getMaxHp());
+            
+            // 2.1 Check Player Defeat
+            if (player.isDefeated()) {
+                System.out.println("💀 GAME OVER. You were defeated by " + currentBoss.getName() + ".");
+                this.isBossQuestActive = false;
+                return;
+            }
+        }
+        
+        System.out.println("Combat Round End. Boss HP: " + currentBoss.getCurrHp());
+    }
+    
+    // Handler for a successful level up (from EXP)
+    private void handleLevelUp() {
+        System.out.println("\n✨ LEVEL UP! You are now Level " + player.getLevel() + "!");
+        if (player.getLevel() % 5 == 0) player.setStatPoints(player.getStatPoints() + 2);
+        else player.setStatPoints(player.getStatPoints() + 1);
         System.out.println("You have " + player.getStatPoints() + " points to allocate.");
-        // UI (ConsoleMenu) will be responsible for prompting the user to allocate
-        // points
+        
+        // Check for new boss spawn condition
+        checkBossSpawn();
     }
 
-    /**
-     * Manages the end of the day, applying damage for incomplete Dailies and
-     * resetting streaks.
-     * This is the core penalty mechanic.
-     */
+    // Handler for Boss Defeat Rewards
+    private void handleBossDefeat() {
+        System.out.println("🎉 Boss Defeated!");
+
+        // 1. Grant Boss EXP (may trigger a regular level up and call handleLevelUp())
+        if (player.addExp(currentBoss.getExpReward())) handleLevelUp();
+        System.out.println("   + " + currentBoss.getExpReward() + " Bonus EXP!");
+
+        // 2. Force +1 Level (Boss Reward)
+        player.gainLevel();
+        
+        // 3. Grant normal stat points for the forced level
+        System.out.println("\n✨ BONUS LEVEL UP! You are now Level " + player.getLevel() + "!");
+        int normalStatBonus = (player.getLevel() % 5 == 0) ? 2 : 1;
+        player.setStatPoints(player.getStatPoints() + normalStatBonus);
+        
+        // 4. Grant bonus +3 Stat Points (Boss Reward)
+        player.setStatPoints(player.getStatPoints() + 3);
+        
+        System.out.println("   + 1 Bonus Level!");
+        System.out.println("   + 3 Bonus Stat Points!");
+        System.out.println("You have " + player.getStatPoints() + " points to allocate.");
+
+        this.isBossQuestActive = false;
+        System.out.println("*** Boss Rewards Processed. ***");
+    }
+    
+    // Checks if a new boss should be created (every 10 levels)
+    private void checkBossSpawn() {
+        // Bosses appear at level 10, 20, 30, etc.
+        if (player.getLevel() > 1 && player.getLevel() % 10 == 0) {
+            int bossLevel = player.getLevel();
+            this.currentBoss = new Boss(bossLevel);
+            this.isBossQuestActive = true; 
+            System.out.println("\n*** 🚨 New Threat Emerges! 🚨 ***");
+            System.out.println("A Level " + bossLevel + " Boss, " + currentBoss.getName() + ", has appeared!");
+        }
+    }
+
     public void endDay() {
         System.out.println("\n--- 🌅 Day End Maintenance ---");
         int totalDamage = 0;
+        int penalty = 5;
 
-        // 1. Check for failed Daily Tasks
         List<DailyTask> incompleteDailies = taskManager.getIncompleteDailyTasks();
-
         for (DailyTask daily : incompleteDailies) {
-            // Apply penalty damage (e.g., base damage is 5, adjust as needed)
-            int penalty = 5;
-
-            // Check for DEX dodge ability (This would use CombatSystem later)
-            boolean dodged = false; // combatSystem.tryToDodge(player.getDexterity());
-
+            // Player dodge chance based on DEX (10% base + 1% per 50 DEX points)
+            boolean dodged = (Math.random() < (0.10 + (player.getDex() / 500.0)));
             if (!dodged) {
                 totalDamage += penalty;
-                System.out.println(
-                        "❌ Failed Daily Task: " + daily.getDescription() + " - Taking " + penalty + " damage.");
-            } else {
-                System.out.println("💨 You deftly dodged the penalty from: " + daily.getDescription());
-            }
+                System.out.println("❌ Failed Daily Task: " + daily.getDescription() + " - Taking " + penalty + " damage.");
+            } else System.out.println("💨 You dodged the penalty from: " + daily.getDescription());
         }
 
-        // 2. Apply total damage to the player (Damage reduction applied inside
-        // player.takeDamage or CombatSystem)
         if (totalDamage > 0) {
             player.takeDamage(totalDamage);
-            if (player.isDefeated()) {
-                System.out.println("💀 GAME OVER. Your hero was defeated by procrastination.");
-                // handlePlayerDefeat();
-            }
-        } else {
-            System.out.println("✅ All daily obligations met! No damage taken.");
-        }
+            System.out.println("💔 Total Penalty Damage Taken: " + totalDamage + ". HP: " + player.getCurrHp() + "/" + player.getMaxHp());
+            if (player.isDefeated()) System.out.println("💀 GAME OVER. Your hero was defeated.");
+        } else System.out.println("✅ All daily obligations met! No damage taken.");
 
-        // 3. Reset all daily tasks for the new day and clean up
         taskManager.resetDailyTasks();
         System.out.println("🌞 New Day starts! Daily tasks reset and streaks updated.");
     }
