@@ -1,4 +1,4 @@
-package com.questify.models;
+package models;
 
 public class Task {
 
