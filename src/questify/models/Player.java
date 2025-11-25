@@ -1,6 +1,8 @@
 package models;
 
-public class Player {
+import java.io.Serializable;
+
+public class Player implements Serializable{
     private String name;
     private int level;
     private int statPoints;
@@ -20,6 +22,8 @@ public class Player {
     private int def; // Defense (Damage Reduction)
     private int intel; // Intelligence (EXP Multiplier, Max Mana scaling)
     private int dex; // Dexterity (Dodge/Hit Chance)
+
+    private String playerSprite;
 
     public Player(String name) {
         this.name = name;
@@ -234,6 +238,10 @@ public class Player {
         return dex;
     }
 
+    public String getPlayerSprite() {
+        return playerSprite;
+    }
+
     public void setStr(int str) {
         this.str = str;
         recalculateDerivedStats();
@@ -250,6 +258,43 @@ public class Player {
 
     public void setDex(int dex) {
         this.dex = dex;
+    }
+
+    public void setPlayerSprite(int choice) {
+        if (choice == 1) {
+            this.playerSprite = "                              \r\n" + //
+                                "             ░▓▓▓▒            \r\n" + //
+                                "         ░▓▓▓▓▓▓▒▓▓▓▓▓░       \r\n" + //
+                                "     ░░▒▓▓▓▓▓▒▒▒▒▒▒▒▒▓▓▒░     \r\n" + //
+                                "     ░█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░    \r\n" + //
+                                "     ░█▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒█░    \r\n" + //
+                                "     ░█▓▓▓▓▒▒▓▒▓▓▒▒▒▒█▓▒█░    \r\n" + //
+                                "     ░█▓▓▓▓▒▒▒▒▒░░▒▒░▒▒▒█░    \r\n" + //
+                                "     ░█▓▓▓▓▓▓▓▒▒░░░░░▒▒▒█░    \r\n" + //
+                                "     ▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▒░   \r\n" + //
+                                "     ░█▓▓▓▓█████████████░░    \r\n" + //
+                                "     ▒▓██▓▓▓▓▓▓▓▒▒▒▓▓▓█░      \r\n" + //
+                                "   ░▒▓█░█▓▓▓▓▓▓▓▓▓▓▓▓▓█░      \r\n" + //
+                                "   ▒▓▒   ░██▓    ░▒██░        \r\n" + //
+                                "         ░░░░    ░░░░         \r\n" + //
+                                "                              ";
+        } else if (choice == 2) {
+            this.playerSprite = "        ░░░▓███▓░░            \r\n" + //
+                                "      ░░▓▓▓▓▓▒▒▓▓█▒           \r\n" + //
+                                "      ▒███▓▓▓▓▒▒▒▓█▒░░░       \r\n" + //
+                                "       ░░▒▓▓▓▓▒▒▒▒▓███▒▒▒▒▒░░ \r\n" + //
+                                "       ░▓█▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓█▒░ \r\n" + //
+                                "  ░░▒██▓▓▓▓▓▓▓▓▓▓██████▓░░    \r\n" + //
+                                "  ░█▓▓▓█████▓▓▓▒▒▒▒▒▓▓██▓░    \r\n" + //
+                                "      ▒█▓▓█▒░▒▓░░░░▒█▒██▓░    \r\n" + //
+                                "    ░▓▓██████▓▓▓▓▓▓▓▓▓█▓▒░    \r\n" + //
+                                "    ░▒█▓██▓▓▓▓▓▓▓▓▓▓▓▓▓░░     \r\n" + //
+                                "     ░░░▓█████████████░░      \r\n" + //
+                                "    ░▒██▓▓▓▓▒▒▓▓███▓▒▓▓▓░     \r\n" + //
+                                "    ░▒▓▓▓▓▓▓▓████████▓▓▒░     \r\n" + //
+                                "         ░▓█▒░   ░▓█▒░        \r\n" + //
+                                "          ░░░     ░░░         ";
+        }
     }
 
     @Override

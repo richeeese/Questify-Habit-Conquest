@@ -1,6 +1,8 @@
 package models;
 
-public class Boss {
+import java.io.Serializable;
+
+public class Boss implements Serializable{
     private String name;
     private int currHp;
     private int maxHp;
