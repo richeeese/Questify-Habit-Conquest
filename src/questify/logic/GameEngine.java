@@ -11,7 +11,7 @@ public class GameEngine {
     private TaskManager taskManager;
     private Boss currentBoss;
 
-    // [Change A] New Tracker Variable
+    // tracker for last boss slain
     private int lastBossLevelDefeated = 0;
 
     public GameEngine(Player player, TaskManager taskManager) {
@@ -20,7 +20,7 @@ public class GameEngine {
         checkBossSpawn();
     }
 
-    // --- Core Getters for UI ---
+    // --- Getters for UI ---
     public Player getPlayer() {
         return player;
     }
@@ -91,7 +91,7 @@ public class GameEngine {
         System.out.println("\n⚔️ You enter combat with " + currentBoss.getName() + " (HP: " + currentBoss.getCurrHp()
                 + "/" + currentBoss.getMaxHp() + ")");
 
-        // 1. PLAYER ATTACK PHASE
+        // enter player attack phase
         double hitChance = 0.80 + (player.getDex() / 1000.0);
 
         if (Math.random() < hitChance) {
@@ -107,7 +107,7 @@ public class GameEngine {
             System.out.println("    ➡️ Your attack MISSES! The boss dodges your strike.");
         }
 
-        // 2. BOSS ATTACK PHASE
+        // enter boss attack phase
         System.out.println("    ⬅️ " + currentBoss.getName() + " attacks you!");
 
         double dodgeChance = 0.10 + (player.getDex() / 1000.0);
@@ -116,7 +116,7 @@ public class GameEngine {
             System.out.println("    🛡️ You DODGE! No damage taken.");
         } else {
             int bossRawAttack = currentBoss.getAttackPower();
-            int actualDamage = player.takeDamage(bossRawAttack); // Fixed: capture return value
+            int actualDamage = player.takeDamage(bossRawAttack);
 
             System.out.println("    💔 You took " + actualDamage + " damage (Reduced by DEF). HP: " + player.getCurrHp()
                     + "/" + player.getMaxHp());
@@ -138,56 +138,39 @@ public class GameEngine {
     private void handleBossDefeat() {
         System.out.println("🎉 Boss Defeated!");
 
-        // [Change B] Save the boss level BEFORE destroying the object
-        // If the boss is Level 10, we record '10' as defeated.
-        // If the boss was somehow null (rare), default to current tracker.
+        // if boss is Level 10, record '10' as defeated.
+        // if the boss is null (rare), default to current tracker.
         if (this.currentBoss != null) {
-            // We calculate the "Tier" (10, 20, 30) just in case
-            // For a Level 10 boss, maxHp logic roughly aligns with level
-            // Since Boss doesn't explicitly store 'level' as a field in your model,
-            // we infer it from the EXP reward or MaxHP logic,
-            // OR we rely on the tracker update logic below.
-
-            // Better approach given your Boss model:
-            // Calculate the tier based on player level, as that spawned the boss.
             int bossTier = (player.getLevel() / 10) * 10;
             this.lastBossLevelDefeated = bossTier;
         }
 
-        // 1. Grant Boss EXP
+        // give boss exp rewards
         if (player.addExp(currentBoss.getExpReward()))
             handleLevelUp();
 
         System.out.println("   + " + currentBoss.getExpReward() + " Bonus EXP!");
 
-        // 3. Grant bonus +3 Stat Points
+        // give stat point rewards
         player.setStatPoints(player.getStatPoints() + 3);
         System.out.println("   + 3 Bonus Stat Points!");
 
         this.currentBoss = null;
 
-        // Re-check immediately in case the EXP gain unlocked the NEXT boss
         checkBossSpawn();
     }
 
-    // [Change C] Corrected Boss Spawn Logic
+    // boss spawn
     private void checkBossSpawn() {
-        // If a boss is already alive, don't spawn another one
+        // if a boss is already alive, don't spawn another one
         if (this.currentBoss != null && !this.currentBoss.isDefeated()) {
             return;
         }
 
         int currentLevel = player.getLevel();
 
-        // Calculate the "Milestone" (Tier Start)
-        // Level 19 -> 10. Level 21 -> 20. Level 30 -> 30.
         int currentTierStart = (currentLevel / 10) * 10;
 
-        // LOGIC:
-        // 1. Player must be at least Level 10.
-        // 2. The current tier (e.g. 20) must be HIGHER than the last one beaten (e.g.
-        // 10).
-        // This catches "Over-Leveling" (e.g. Jumping from 19 to 21).
         if (currentTierStart >= 10 && currentTierStart > this.lastBossLevelDefeated) {
             spawnBoss(currentTierStart);
         }
@@ -224,7 +207,7 @@ public class GameEngine {
         System.out.println("A Level " + bossLevel + " Boss, " + currentBoss.getName() + ", has appeared! Defeat it!");
     }
 
-    // --- Penalty Logic (Kept exactly as is) ---
+    // --- Penalty Logic ---
     public void resolveFailedTask(DailyTask daily, boolean usedDodgeCharge) {
         int penalty = 5;
         if (usedDodgeCharge) {

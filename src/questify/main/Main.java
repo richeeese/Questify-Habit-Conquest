@@ -19,6 +19,7 @@ public class Main {
 
         boolean isNewGame = false;
 
+        // attempt to load existing game
         Player loadedPlayer = SaveManager.loadGame();
         if (loadedPlayer != null) {
             hero = loadedPlayer;
@@ -43,7 +44,7 @@ public class Main {
         gameEngine = new GameEngine(hero, taskManager);
         menu = new ConsoleMenu(gameEngine);
 
-        // runs intro and creates character if new game
+        // creates character if new game
         if (isNewGame) {
             menu.runCharacterCreation();
 
@@ -59,7 +60,6 @@ public class Main {
         System.out.println("\nStarting menu...");
         menu.startMenu();
 
-        // Clean up scanner resource
         setupScanner.close();
     }
 }

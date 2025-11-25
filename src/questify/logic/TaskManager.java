@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 public class TaskManager {
 
+    // references to player quest log
     private Player player;
 
     public TaskManager(Player player) {
@@ -72,7 +73,7 @@ public class TaskManager {
 
     // --- End-of-Day Maintenance ---
     public void resetDailyTasks() {
-        // 1. Handle Daily Tasks (Reset them, don't delete them)
+        // 1. Handle Daily Tasks
         for (Task task : getTasks()) {
             if (task instanceof DailyTask) {
                 // This updates streaks and sets completed = false
@@ -81,11 +82,6 @@ public class TaskManager {
         }
 
         // 2. Handle To-Do Tasks (Delete them if they are finished)
-        // "Remove if it is NOT a DailyTask AND it IS Completed"
         getTasks().removeIf(t -> !(t instanceof DailyTask) && t.isCompleted());
-
-        // OPTIONAL: If you want ALL To-Dos to vanish (even failed ones), use this
-        // instead:
-        // allTasks.removeIf(t -> !(t instanceof DailyTask));
     }
 }
