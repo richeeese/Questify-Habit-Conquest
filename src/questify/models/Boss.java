@@ -2,13 +2,14 @@ package models;
 
 import java.io.Serializable;
 
-public class Boss implements Serializable{
+public class Boss implements Serializable {
     private String name;
     private int currHp;
     private int maxHp;
     private int expReward;
     private int attackPower;
     private int defense;
+    private int level;
 
     public Boss(int level) {
         this.name = "The Level " + level + " Boss"; // Default name
@@ -37,6 +38,11 @@ public class Boss implements Serializable{
     }
 
     // --- Getters ---
+
+    public int getLevel() {
+        return level;
+    }
+
     public String getName() {
         return name;
     }
