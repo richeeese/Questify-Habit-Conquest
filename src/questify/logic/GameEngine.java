@@ -125,8 +125,12 @@ public class GameEngine {
         if (Math.random() < dodgeChance) {
             System.out.println("    🛡️ You DODGE! No damage taken.");
         } else {
-            int bossAttack = currentBoss.getAttackPower();
-            player.takeDamage(bossAttack);
+            int bossRawAttack = currentBoss.getAttackPower();
+            int actualDamage = player.takeDamage(bossRawAttack);
+
+            System.out.println(
+                    "    💔 You took " + actualDamage + " damage (Reduced by DEF). HP: " + player.getCurrHp() + "/"
+                            + player.getMaxHp());
 
             if (player.isDefeated()) {
                 System.out.println("💀 GAME OVER. You were defeated by " + currentBoss.getName() + ".");

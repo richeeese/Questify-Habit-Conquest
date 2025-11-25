@@ -125,12 +125,20 @@ public class Player {
         System.out.println("🎉 LEVEL UP! You are now level " + this.level);
     }
 
-    public void takeDamage(int rawDamage) {
-        // Damage reduction based on DEF
-        int actualDamage = Math.max(1, rawDamage - (this.def / 2));
+    public int takeDamage(int rawDamage) {
+        // 1. Calculate Damage Reduction (Defense / 2)
+        int damageReduction = this.def / 2;
+
+        // 2. Calculate Actual Damage (Minimum 1)
+        int actualDamage = Math.max(1, rawDamage - damageReduction);
+
+        // 3. Apply to HP
         this.currHp -= actualDamage;
         if (this.currHp < 0)
             this.currHp = 0;
+
+        // 4. RETURN the value so GameEngine knows what happened
+        return actualDamage;
     }
 
     public void failedTask() {
