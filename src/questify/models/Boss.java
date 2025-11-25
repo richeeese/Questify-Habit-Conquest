@@ -32,7 +32,7 @@ public class Boss implements Serializable {
         return currHp <= 0;
     }
 
-    // --- Setters (Needed for GameEngine to customize the Boss) ---
+    // --- Setters ---
     public void setName(String name) {
         this.name = name;
     }

@@ -161,13 +161,13 @@ public class ConsoleMenu implements GameUI {
         String desc;
         while (true) {
             System.out.print("Enter Description: ");
-            desc = sc.nextLine().trim(); // .trim() removes spaces
+            desc = sc.nextLine().trim();
 
             if (desc.equals("0"))
-                return; // Allow canceling here too
+                return;
 
             if (!desc.isEmpty()) {
-                break; // Input is valid, exit the loop
+                break;
             }
 
             System.out.println("⚠️ Description cannot be empty. Please try again.");
@@ -185,7 +185,7 @@ public class ConsoleMenu implements GameUI {
             if (diff.equalsIgnoreCase("Easy") ||
                     diff.equalsIgnoreCase("Medium") ||
                     diff.equalsIgnoreCase("Hard")) {
-                break; // Valid
+                break;
             }
 
             System.out.println("⚠️ Invalid difficulty. Please type Easy, Medium, or Hard.");
@@ -226,12 +226,7 @@ public class ConsoleMenu implements GameUI {
         Task t = gameEngine.getTaskManager().toggleCompletion(index - 1);
 
         if (t != null) {
-            // 🔴 CRITICAL FIX:
-            // Pass the task to the Engine regardless of whether it's Done or Undone.
-            // The Engine handles the math (Adding EXP if Done, Removing EXP if Undone).
             gameEngine.playerCompletesTask(t);
-
-            // Optional: UI Feedback (The Engine already prints the math logs)
             if (t.isCompleted()) {
                 System.out.println("   (Marked [X])");
             } else {
@@ -373,8 +368,6 @@ public class ConsoleMenu implements GameUI {
                 System.out.println("----------------------------------------");
             }
         }
-
-        // Finalize day: rest and reset tasks/charges
         gameEngine.completeDayReset();
     }
 
@@ -411,37 +404,25 @@ public class ConsoleMenu implements GameUI {
         System.out.println("=========================================================");
 
         // welcoming and sprite selection
-        System.out.println(); // put intro banner here
+        System.out.println();
         System.out.println("Welcome, Hero " + gameEngine.getPlayer().getName()
-                + "!\nThe realm needs your habits. Quickly, choose an avatar form before procrastination takes over our land!"); // put
-                                                                                                                                 // welcome
-                                                                                                                                 // message
-                                                                                                                                 // here
+                + "!\nThe realm needs your habits. Quickly, choose an avatar form before procrastination takes over our land!");
+
         System.out.println("\n(Press Enter to continue...)");
         sc.nextLine();
 
-        System.out.println("Choose your avatar form from the ones below:"); // put quirky sprite selection passage here
+        System.out.println("Choose your avatar form from the ones below:");
         displaySprite1();
 
         System.out.println(
-                "This avatar resembles a valiant and persistent warrior. \nHaving been through multiple battles, he needs your help in battling the tardiness that has spread across the land!"); // "this
-                                                                                                                                                                                                  // is
-                                                                                                                                                                                                  // your
-                                                                                                                                                                                                  // character"
-                                                                                                                                                                                                  // or
-                                                                                                                                                                                                  // something
+                "This avatar resembles a valiant and persistent warrior. \nHaving been through multiple battles, he needs your help in battling the tardiness that has spread across the land!");
 
         System.out.println("\n(Press Enter to continue...)");
         sc.nextLine();
 
         displaySprite2();
         System.out.println(
-                "This avatar resembles a swift and quick-witted warrior.\nShe has survived the invasion of procrastination throughout the land and wants you to aid her in warding it off!"); // "this
-                                                                                                                                                                                              // is
-                                                                                                                                                                                              // your
-                                                                                                                                                                                              // character"
-                                                                                                                                                                                              // or
-                                                                                                                                                                                              // something
+                "This avatar resembles a swift and quick-witted warrior.\nShe has survived the invasion of procrastination throughout the land and wants you to aid her in warding it off!");
 
         // error handling for sprite selection
         try {

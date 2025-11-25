@@ -55,7 +55,7 @@ public class Player implements Serializable {
         int newMaxHp = 50 + (this.str * 5);
         int newMaxMana = 20 + (this.intel * 1);
 
-        // Adjust current HP/Mana safely when max changes
+        // Adjust current HP/Mana when max changes
         if (newMaxHp > this.maxHp)
             this.currHp += (newMaxHp - this.maxHp);
         this.maxHp = newMaxHp;
@@ -74,7 +74,7 @@ public class Player implements Serializable {
         this.currExp += exp;
         boolean leveledUp = false;
 
-        // Loop: While we have enough EXP to level up...
+        // Loop: While player has enough EXP to level up
         while (this.currExp >= this.maxExp) {
             levelUp();
             leveledUp = true;
@@ -115,47 +115,31 @@ public class Player implements Serializable {
     }
 
     private void levelUp() {
-        // 1. FIX: Pay the cost FIRST (using the OLD maxExp)
-        // Example: If you have 60 Exp and need 50, we subtract 50 here.
         this.currExp -= this.maxExp;
-
-        // 2. NOW increase the level
         this.level++;
 
-        // 3. Grant stat points
+        // Grant stat points
         this.statPoints += (this.level % 5 == 0) ? 2 : 1;
 
-        // 4. Update Max EXP and Stats for the NEW level
-        // This will set the NEW maxExp (e.g., to 60) AFTER we already subtracted.
+        // Set new Max stats
         recalculateDerivedStats();
 
-        // 5. Full heal
+        // Full heal
         this.currHp = this.maxHp;
         this.currMana = this.maxMana;
 
-        System.out.println("🎉 LEVEL UP! You are now level " + this.level);
     }
 
     private void levelDown() {
         this.level--;
-
-        // Calculate what the Max EXP was at the previous level
-        // Formula: 20 + (level * 10)
         int prevMaxExp = 20 + (this.level * 10);
-
-        // Wrap the negative current EXP back to the positive range of the previous
-        // level
-        // Example: If currExp is -10, and prevMax was 50. New currExp = 40.
         this.currExp += prevMaxExp;
-
-        // Remove the stat points that were gained
-        // Note: Check (level + 1) because we just decremented
         int pointsToRemove = ((this.level + 1) % 5 == 0) ? 2 : 1;
         this.statPoints -= pointsToRemove;
 
         recalculateDerivedStats();
 
-        // Clamp HP/Mana if they now exceed the lower max limits
+        // Clamp HP/Mana if player exceed the lower max limits
         this.currHp = Math.min(this.currHp, this.maxHp);
         this.currMana = Math.min(this.currMana, this.maxMana);
 
@@ -163,18 +147,11 @@ public class Player implements Serializable {
     }
 
     public int takeDamage(int rawDamage) {
-        // 1. Calculate Damage Reduction (Defense / 2)
         int damageReduction = this.def / 2;
-
-        // 2. Calculate Actual Damage (Minimum 1)
         int actualDamage = Math.max(1, rawDamage - damageReduction);
-
-        // 3. Apply to HP
         this.currHp -= actualDamage;
         if (this.currHp < 0)
             this.currHp = 0;
-
-        // 4. RETURN the value so GameEngine knows what happened
         return actualDamage;
     }
 
