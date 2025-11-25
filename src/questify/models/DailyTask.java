@@ -1,8 +1,6 @@
 package models;
 
-import java.io.Serializable;
-
-public class DailyTask extends Task implements Serializable {
+public class DailyTask extends Task {
     private int streak;
     
     public DailyTask(String description, String difficulty) {
