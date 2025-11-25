@@ -352,9 +352,9 @@ public class ConsoleMenu implements GameUI {
 
     // --- HELPER ---
     private void printHeader() {
-        System.out.println("\n========================================");
-        System.out.println("      Q U E S T I F Y   V 1.0");
-        System.out.println("========================================");
+        System.out.println("\n=========================================================");
+        System.out.println("\t\tQ U E S T I F Y   V 1.0");
+        System.out.println("=========================================================");
         System.out.printf("Hero: %s | Lvl: %d | HP: %d/%d | Exp: %d/%d (Dodge: %d)\n",
                 gameEngine.getPlayer().getName(),
                 gameEngine.getPlayer().getLevel(),
@@ -363,7 +363,7 @@ public class ConsoleMenu implements GameUI {
                 gameEngine.getPlayer().getCurrExp(),
                 gameEngine.getPlayer().getMaxExp(),
                 gameEngine.getPlayer().getDodgeCharges());
-        System.out.println("========================================");
+        System.out.println("=========================================================");
     }
 
     private int getValidInt(String prompt) {
@@ -378,9 +378,9 @@ public class ConsoleMenu implements GameUI {
     }
 
     public void runCharacterCreation() {
-        System.out.println("=========================================");
-        System.out.println("  WELCOME, " + gameEngine.getPlayer().getName() + "!");
-        System.out.println("=========================================");
+        System.out.println("=========================================================");
+        System.out.println("\t\t   WELCOME, " + gameEngine.getPlayer().getName() + "!");
+        System.out.println("=========================================================");
 
         // welcoming and sprite selection
         System.out.println(); // put intro banner here

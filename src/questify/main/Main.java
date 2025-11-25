@@ -22,14 +22,14 @@ public class Main {
         Player loadedPlayer = SaveManager.loadGame();
         if (loadedPlayer != null) {
             hero = loadedPlayer;
-            System.out.println("======================================");
-            System.out.println("  W E L C O M E  T O  Q U E S T I F Y ");
-            System.out.println("======================================");
+            System.out.println("=========================================================");
+            System.out.println("\t   W E L C O M E  T O  Q U E S T I F Y ");
+            System.out.println("=========================================================");
             System.out.println("Loaded existing game for hero: " + hero.getName());
         } else {
-            System.out.println("======================================");
-            System.out.println("  W E L C O M E  T O  Q U E S T I F Y ");
-            System.out.println("======================================");
+            System.out.println("=========================================================");
+            System.out.println("\t   W E L C O M E  T O  Q U E S T I F Y ");
+            System.out.println("=========================================================");
             isNewGame = true;
 
             System.out.print("Enter your Hero's Name: ");
