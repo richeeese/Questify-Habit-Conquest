@@ -16,44 +16,21 @@ public class ConsoleMenu {
         this.sc = new Scanner(System.in); 
     }
     
-    // --- NEW HELPER: Determine the boss level tier for display ---
-    /**
-     * Calculates the level of the next or current boss tier (10, 20, 30, etc.).
-     * This relies on GameEngine.getCurrentBoss() and the player's level.
-     */
-    private int getBossTierLevel(int playerLevel) {
-        // If an active boss is present, return its level immediately.
-        if (gameEngine.getCurrentBoss() != null && !gameEngine.getCurrentBoss().isDefeated()) {
-            return gameEngine.getCurrentBoss().getLevel();
-        }
-        
-        // Otherwise, calculate the next boss level (always the next 10s tier)
-        if (playerLevel < 10) return 10;
-        
-        int currentTier = (playerLevel / 10) * 10; 
-        
-        // The next challenge is the next tier up (e.g., Lvl 12 -> 20, Lvl 20 defeated -> 30)
-        return currentTier + 10;
+    // --- HELPER: Determine the boss level tier for display ---
+    private int getBossTierLevel() {
+        return gameEngine.getCurrentChallengeLevel();
     }
 
-    // --- NEW HELPER: Formats the level range string ---
-    /**
-     * Returns the formatted string (e.g., "10-19") for the next challenge tier.
-     */
+    // --- HELPER: Formats the level range string (e.g., "10-19") ---
     private String getNextBossLevelRange() {
-        int bossLevel = getBossTierLevel(gameEngine.getPlayer().getLevel());
+        int bossLevel = getBossTierLevel();
         
-        // If the level is very high (e.g., 60+), keep the 10-level range format
-        if (bossLevel > 50) {
-            return bossLevel + "-" + (bossLevel + 9);
-        }
-        
-        // Specific ranges for initial bosses
+        // The level range for that boss is (Boss Level) to (Boss Level + 9)
         return bossLevel + "-" + (bossLevel + 9);
     }
 
 
-    // --- MAIN LOOP (Modified Section) ---
+    // --- MAIN LOOP ---
     public void startMenu() {
         boolean running = true;
 
@@ -83,11 +60,12 @@ public class ConsoleMenu {
             System.out.println("3. 👤 Character Sheet & Stats");
             System.out.println("4. 💪 Allocate Stat Points (1 point at a time)");
             
-            // --- UPDATED BOSS DISPLAY LOGIC ---
+            // --- BOSS DISPLAY LOGIC ---
             if (gameEngine.getCurrentBoss() != null && !gameEngine.getCurrentBoss().isDefeated()) {
+                // If a boss is currently active, show the fight option
                 System.out.println("5. ⚔️ FIGHT BOSS (" + gameEngine.getCurrentBoss().getName() + ")");
             } else {
-                // ASSUMES GameEngine has the getUpcomingBossName() method
+                // If no boss is active, show the next challenge tier
                 String nextBossName = gameEngine.getUpcomingBossName(); 
                 String levelRange = getNextBossLevelRange();
                 System.out.println("5. 🛡️ NEXT CHALLENGE: " + nextBossName + " (Lvl " + levelRange + ")");
@@ -109,7 +87,7 @@ public class ConsoleMenu {
                     if (gameEngine.getCurrentBoss() != null && !gameEngine.getCurrentBoss().isDefeated()) {
                         gameEngine.initiateCombat();
                     } else {
-                        System.out.println("No boss to fight right now. Focus on your Quests!");
+                        System.out.println("No boss is currently active. Focus on leveling up!");
                     }
                     break;
                 case "6": handleEndDay(); break;
@@ -207,7 +185,6 @@ public class ConsoleMenu {
                 gameEngine.playerCompletesTask(t);
             } else {
                 System.out.println("Marked as incomplete. EXP will be lost.");
-                // ASCII art removed for brevity, assuming it's in the GameEngine.
             }
         } else {
             System.out.println("Invalid Quest Number.");
@@ -253,7 +230,6 @@ public class ConsoleMenu {
         
         if (gameEngine.getPlayer().isDefeated()) {
             System.out.println("⛑️ Critical rest taken. Your hero recovers from their wounds.");
-            // Heal/Reset happens below
         } else {
             List<DailyTask> failures = gameEngine.getTaskManager().getIncompleteDailyTasks();
 

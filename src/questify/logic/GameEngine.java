@@ -4,18 +4,20 @@ import models.Player;
 import models.Task;
 import models.DailyTask;
 import models.Boss;
-//import java.util.List;
+import java.util.List;
+import java.lang.Math;
 
 public class GameEngine {
 
     private Player player;
     private TaskManager taskManager;
     private Boss currentBoss;
+    private int lastBossDefeatedLevel = 0; // NEW TRACKER ADDED HERE
 
     public GameEngine(Player player, TaskManager taskManager) {
         this.player = player;
         this.taskManager = taskManager;
-        // Check if a boss needs to be spawned based on starting level
+        // Check for Lvl 10 boss spawn if player starts at Lvl 10+
         checkBossSpawn(); 
     }
 
@@ -27,59 +29,34 @@ public class GameEngine {
     // --- BOSS NAMING & TIER LOGIC ---
 
     /**
-     * Determines the level of the *current* boss challenge (10, 20, 30, etc.)
-     * This is the base level of the boss that the player is currently eligible to fight
-     * or whose name should be displayed for the current tier.
-     * E.g., If Lvl 23 and Lvl 10 boss is defeated, the challenge is Lvl 20.
+     * Determines the level of the *current* boss challenge (10, 20, 30, etc.).
+     * This ensures correct progression after defeating a boss.
      */
     public int getCurrentChallengeLevel() {
         int playerLevel = player.getLevel();
         
+        // 1. Always return 10 if player hasn't reached the first tier.
         if (playerLevel < 10) return 10;
         
-        // Find the next 10s tier level.
-        // E.g., Lvl 12 -> (12+9)/10 = 2.1 -> 2. * 10 = 20
-        // E.g., Lvl 29 -> (29+9)/10 = 3.8 -> 3. * 10 = 30
-        // E.g., Lvl 20 -> (20+9)/10 = 2.9 -> 2. * 10 = 20 (If boss is active)
-        int nextTierLevel = 10 * ((playerLevel + 9) / 10);
-        
+        // 2. If a boss is currently active, always return its level.
         if (currentBoss != null && !currentBoss.isDefeated()) {
-             // If a boss is currently active, return its level.
              return currentBoss.getLevel();
-        } else {
-             // If Lvl 23 and the Lvl 10 boss is defeated, the challenge is Lvl 20.
-             // We need to look back to the start of the current tier.
-             int currentTierStart = (playerLevel / 10) * 10;
-             
-             if (currentTierStart == 0) return 10;
-             
-             // If player is Lvl 23, currentTierStart is 20. The challenge should be 20.
-             // If player is Lvl 20, the next challenge is Lvl 30 (since Lvl 20 boss is defeated).
-             if (playerLevel % 10 == 0 && playerLevel >= 10 && currentBoss == null) {
-                  return playerLevel + 10;
-             }
-             
-             // Check if the current level is in the 10-19 range or 20-29 range.
-             if (playerLevel < nextTierLevel) {
-                 return currentTierStart;
-             } else {
-                 return nextTierLevel;
-             }
         }
+        
+        // 3. If no boss is active (defeated or not yet spawned): 
+        // The challenge is always the tier immediately following the last defeated boss.
+        return this.lastBossDefeatedLevel + 10; 
     }
 
 
     /**
      * Retrieves the name of the boss for the player's CURRENT challenge level.
-     * This ensures the menu shows the Lvl 20 boss name for Lvl 23 players.
      */
     public String getUpcomingBossName() {
-        // If an active boss exists, always display its name.
         if (currentBoss != null && !currentBoss.isDefeated()) {
              return currentBoss.getName();
         }
         
-        // Otherwise, get the name of the boss for the level tier the player is currently challenging.
         int challengeLevel = getCurrentChallengeLevel();
         return getBossNameByLevel(challengeLevel);
     }
@@ -89,14 +66,12 @@ public class GameEngine {
      */
     private String getBossNameByLevel(int bossLevel) {
         switch (bossLevel) {
-            case 10: 
-                return "The Procrastination Daemon";
-            case 20:return "The Siren of Distraction";
+            case 10: return "The Procrastination Daemon";
+            case 20: return "The Siren of Distraction";
             case 30: return "The Fog of Burnout";
             case 40: return "The Perfectionist Hydra";
             case 50: return "The Time Sink Kraken";
             default:
-                // Ensure this still returns the *next* tier name if the tier is defeated
                 return "The Level " + bossLevel + " Overwhelming Task";
         }
     }
@@ -107,10 +82,8 @@ public class GameEngine {
         if (completedTask == null || !completedTask.isCompleted()) return;
         
         int baseExp = completedTask.getExpReward();
-        // Intel is used as a direct multiplier for EXP gain
         int finalExp = baseExp * player.getIntel(); 
 
-        // addExp handles the EXP check and calls handleLevelUp internally if true
         if (player.addExp(finalExp)) {
             handleLevelUp();
         }
@@ -120,49 +93,45 @@ public class GameEngine {
         System.out.println("\n✨ LEVEL UP! You are now Level " + player.getLevel() + "!");
         System.out.println("You have " + player.getStatPoints() + " points to allocate.");
         
-        // Always check for boss spawn after a level up
         checkBossSpawn();
     }
 
     // --- CORE BOSS SPAWN LOGIC ---
 
-    /**
-     * Core logic for spawning a boss when the player reaches the start of a new tier.
-     */
     private void checkBossSpawn() {
         int playerLevel = player.getLevel();
         
-        // Bosses only spawn on levels 10, 20, 30, etc.
+        // Calculate the base level of the current tier (e.g., Lvl 33 -> 30)
+        int currentTierStart = (playerLevel / 10) * 10;
+        
+        // Bosses only spawn when the player hits the tier start level (10, 20, 30, etc.)
         if (playerLevel >= 10 && playerLevel % 10 == 0) {
             
-            // 1. Check if a boss is currently active. If so, do nothing.
+            // 1. If a boss is currently active, do nothing.
             if (currentBoss != null && !currentBoss.isDefeated()) {
                 return;
             }
             
-            // 2. If no boss is active, check if the player's level is higher than the last defeated boss.
-            //    (lastBossLevel will be 0 if no boss has been spawned/defeated yet)
-            int lastBossLevel = (currentBoss == null) ? 0 : currentBoss.getLevel();
-            
-            // If the player hit Level 20, and the last boss defeated was Level 10, spawn the Level 20 boss.
-            if (playerLevel > lastBossLevel) {
+            // 2. If no boss is active, spawn if the player's level is higher than the last defeated boss.
+            if (playerLevel > this.lastBossDefeatedLevel) {
                 spawnBossAtLevel(playerLevel);
             }
         }
+        
+        // If the player over-leveled (e.g., Lvl 29 -> Lvl 31) and missed the spawn, 
+        // we check if the current tier boss was never defeated.
+        if (currentBoss == null && currentTierStart > this.lastBossDefeatedLevel) {
+             spawnBossAtLevel(currentTierStart);
+        }
     }
     
-    /**
-     * Helper to instantiate and announce a new boss.
-     */
     private void spawnBossAtLevel(int level) {
          this.currentBoss = new Boss(level); 
          String bossName = getBossNameByLevel(level);
          this.currentBoss.setName(bossName);
          
-         // Apply custom traits for Lvl 10 boss
          if (level == 10) {
-              // Assumes setAttackPower exists in Boss.java
-              this.currentBoss.setAttackPower(this.currentBoss.getAttackPower() + 5); 
+             this.currentBoss.setAttackPower(this.currentBoss.getAttackPower() + 5); 
          }
 
          System.out.println("\n*** 🚨 New Threat Emerges! 🚨 ***");
@@ -265,10 +234,14 @@ public class GameEngine {
         System.out.println("   + 3 Bonus Stat Points!");
         System.out.println("You have " + player.getStatPoints() + " points to allocate.");
 
+        // --- FIX: Save defeated level before clearing currentBoss ---
+        this.lastBossDefeatedLevel = this.currentBoss.getLevel(); 
         this.currentBoss = null;
+        // -----------------------------------------------------------
+        
         System.out.println("*** Boss Rewards Processed. ***");
         
-        // Check for next boss spawn (e.g., if Lvl 19 defeated Lvl 10 boss, they hit Lvl 20 and spawn Lvl 20 boss)
+        // This check will now correctly spawn the next boss if the bonus level up hits the next tier milestone (e.g., Lvl 30)
         checkBossSpawn(); 
     }
     
@@ -296,7 +269,7 @@ public class GameEngine {
     public void completeDayReset() {
         taskManager.resetDailyTasks();
         
-        // Heal and replenish charges on rest
+        // Full heal and replenish charges on rest
         player.rest(); 
         player.replenishDodgeCharge(1);
 
