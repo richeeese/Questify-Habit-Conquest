@@ -2,6 +2,7 @@ package main;
 
 // Import necessary classes from other packages
 import models.Player;
+import logic.SaveManager;
 import logic.TaskManager;
 import logic.GameEngine;
 import ui.ConsoleMenu;
@@ -9,25 +10,52 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        // Use a temporary scanner for initial setup
+        // important initializations
         Scanner setupScanner = new Scanner(System.in);
+        Player hero;
+        TaskManager taskManager;
+        GameEngine gameEngine;
+        ConsoleMenu menu;
 
-        System.out.println("======================================");
-        System.out.println("  W E L C O M E  T O  Q U E S T I F Y ");
-        System.out.println("======================================");
-        System.out.print("Enter your Hero's Name: ");
-        String name = setupScanner.nextLine();
+        boolean isNewGame = false;
 
-        // 1. Initialize Core Models and Logic
+        Player loadedPlayer = SaveManager.loadGame();
+        if (loadedPlayer != null) {
+            hero = loadedPlayer;
+            System.out.println("======================================");
+            System.out.println("  W E L C O M E  T O  Q U E S T I F Y ");
+            System.out.println("======================================");
+            System.out.println("Loaded existing game for hero: " + hero.getName());
+        } else {
+            System.out.println("======================================");
+            System.out.println("  W E L C O M E  T O  Q U E S T I F Y ");
+            System.out.println("======================================");
+            isNewGame = true;
+
+            System.out.print("Enter your Hero's Name: ");
+            String name = setupScanner.nextLine();
+            hero = new Player(name);
+        }
+
+        // initialize game components with the hero
         System.out.println("\nInitializing game world...");
-        Player hero = new Player(name);
-        TaskManager taskManager = new TaskManager(hero);
-        GameEngine gameEngine = new GameEngine(hero, taskManager);
+        taskManager = new TaskManager(hero);
+        gameEngine = new GameEngine(hero, taskManager);
+        menu = new ConsoleMenu(gameEngine);
 
-        // 2. Initialize UI
-        ConsoleMenu menu = new ConsoleMenu(gameEngine);
+        // runs intro and creates character if new game
+        if (isNewGame) {
+            menu.runCharacterCreation();
 
-        // 3. Start the Game Loop
+            SaveManager.saveGame(hero);
+        }
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            SaveManager.saveGame(hero);
+            System.out.println("\n[System] Shutting down and saving... Safe travels, hero!");
+        }));
+
+        // start the game loop
         System.out.println("\nStarting menu...");
         menu.startMenu();
 

@@ -375,4 +375,85 @@ public class ConsoleMenu {
             }
         }
     }
+
+    public void runCharacterCreation() {
+        System.out.println("=========================================");
+        System.out.println("  WELCOME, " + gameEngine.getPlayer().getName() + "!");
+        System.out.println("=========================================");
+
+        // welcoming and sprite selection
+        System.out.println(); // put intro banner here
+        System.out.println("Welcome, Hero " + gameEngine.getPlayer().getName()
+                + "!\nThe realm needs your habits. Quickly, choose an avatar form before procrastination takes over our land!"); // put
+                                                                                                                                 // welcome
+                                                                                                                                 // message
+                                                                                                                                 // here
+        System.out.println("Choose your avatar form from the ones below:"); // put quirky sprite selection passage here
+        displaySprite1();
+        System.out.println(
+                "This avatar resembles a valiant and persistent warrior. \nHaving been through multiple battles, he needs your help in battling the tardiness that has spread across the land!"); // "this
+                                                                                                                                                                                                  // is
+                                                                                                                                                                                                  // your
+                                                                                                                                                                                                  // character"
+                                                                                                                                                                                                  // or
+                                                                                                                                                                                                  // something
+        displaySprite2();
+        System.out.println(
+                "This avatar resembles a swift and quick-witted warrior.\nShe has survived the invasion of procrastination throughout the land and wants you to aid her in warding it off!"); // "this
+                                                                                                                                                                                              // is
+                                                                                                                                                                                              // your
+                                                                                                                                                                                              // character"
+                                                                                                                                                                                              // or
+                                                                                                                                                                                              // something
+
+        // error handling for sprite selection
+        try {
+            System.out.print("Choose your avatar (1 or 2): ");
+            int choice = Integer.parseInt(sc.nextLine());
+            if (choice == 1 || choice == 2) {
+                gameEngine.getPlayer().setPlayerSprite(choice); // Assumes Player has this method
+                System.out.println("Selection saved!");
+            } else {
+                System.out.println("Invalid choice. Default character selected.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Default character selected.");
+        }
+    }
+
+    public void displaySprite1() {
+        System.out.println("                              \r\n" + //
+                        "             ░░░░░░░          \r\n" + //
+                        "          ░░░▒▓▓▓▓▓▒▒░░░      \r\n" + //
+                        "        ░░▒▓▓▓▓▓▒▒▒▒▓▓▓▒░░    \r\n" + //
+                        "       ░▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒░░   \r\n" + //
+                        "       ░▒▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓░░   \r\n" + //
+                        "       ░▒▓▓▓▒▒▒▒▓▒▒▒▒▓▒▒▓░░   \r\n" + //
+                        "       ░▒▓▓▓▓▓▒▒▒▒▒▒▒░▒▒▓░░   \r\n" + //
+                        "      ░░▒▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▓░░   \r\n" + //
+                        "      ░░▓▓▓▒▓▓▓▓▓▓▓▓▓▓▓▓▒░░   \r\n" + //
+                        "      ░░▒▓█▓▓▓▓▓▓▓▓▓▓▓█▒░░    \r\n" + //
+                        "    ░░░▒▓▓█▓▓▓▓▓▓▓▓▓▓▓█▒░     \r\n" + //
+                        "    ░░▒▒░░░▒█▓▒░░░▒██▒░░░     \r\n" + //
+                        "          ░░░░░   ░░░░        \r\n" + //
+                        "                              ");
+    }
+
+    public void displaySprite2() {
+        System.out.println("        ░░░▓███▓░░            \r\n" + //
+                        "      ░░▓▓▓▓▓▒▒▓▓█▒           \r\n" + //
+                        "      ▒███▓▓▓▓▒▒▒▓█▒░░░       \r\n" + //
+                        "       ░░▒▓▓▓▓▒▒▒▒▓███▒▒▒▒▒░░ \r\n" + //
+                        "       ░▓█▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓█▒░ \r\n" + //
+                        "  ░░▒██▓▓▓▓▓▓▓▓▓▓██████▓░░    \r\n" + //
+                        "  ░█▓▓▓█████▓▓▓▒▒▒▒▒▓▓██▓░    \r\n" + //
+                        "      ▒█▓▓█▒░▒▓░░░░▒█▒██▓░    \r\n" + //
+                        "    ░▓▓██████▓▓▓▓▓▓▓▓▓█▓▒░    \r\n" + //
+                        "    ░▒█▓██▓▓▓▓▓▓▓▓▓▓▓▓▓░░     \r\n" + //
+                        "     ░░░▓█████████████░░      \r\n" + //
+                        "    ░▒██▓▓▓▓▒▒▓▓███▓▒▓▓▓░     \r\n" + //
+                        "    ░▒▓▓▓▓▓▓▓████████▓▓▒░     \r\n" + //
+                        "         ░▓█▒░   ░▓█▒░        \r\n" + //
+                        "          ░░░     ░░░         ");
+    }
 }
