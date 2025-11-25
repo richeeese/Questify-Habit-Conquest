@@ -35,7 +35,7 @@ public class Player implements Serializable {
         this.currExp = 0;
 
         // Base Stats
-        this.str = 100;
+        this.str = 10;
         this.def = 10;
         this.intel = 1;
         this.dex = 10;
