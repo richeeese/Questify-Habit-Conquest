@@ -20,21 +20,25 @@ It showcases the use of Object-Oriented Programming(OOP) through a console-based
 ### In Questify, players can do the following:
 <p>
 🖋️ Add tasks
- └── To-dos<
- └── Daily Tasks
-📝 View tasks
- └── Mark as done
+ └── To-dos
+ └── Daily tasks
+📝 Task Manager
+ └── Mark as done/undone
+ └── Active dodge mechanics
 👾 Make Character Profile
  └── Choose Avatar and Username
- └── Level Up
- └── View Stats
- └── Allocate Stat Points
+ └── Level up
+ └── View stats
+ └── Allocate stat points
 ⚔️ Combat Mechanics
- └── Boss Quests
+ └── Boss fights
  └── Turn-based Combat
  └── RNG Impact
+    └── Passive dodge mechanics
+    └── Attack hits/misses
 📩 Progress Security
- └── Saving and Loading of Progress and Tasks
+ └── Local file saving
+ └── Saving/Loading of Progress and Tasks
 </p>
 
 ## Project Structure
