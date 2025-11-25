@@ -1,77 +1,87 @@
-package src.com.questify.logic;
+package logic;
 
-import src.com.questify.models.Task;
-import java.util.ArrayList;
-import java.util.List; // Prefer List for method signatures
+import models.Player;
+import models.Task;
+import models.DailyTask;
+import java.util.List;
+import java.util.stream.Collectors;
 
-// TaskManager is now a non-static instance class
 public class TaskManager {
 
-    private ArrayList<Task> tasks = new ArrayList<>();
+    // references to player quest log
+    private Player player;
 
-    // READ / LIST (Returns the list for the UI/Engine to process)
+    public TaskManager(Player player) {
+        this.player = player;
+    }
+
+    // --- Public Task Management Methods ---
+
+    public void addTask(Task task) {
+        getTasks().add(task);
+    }
+
+    public void addTask(String description, String difficulty) {
+        getTasks().add(new Task(description, difficulty));
+    }
+
+    public void addDailyTask(String description, String difficulty) {
+        getTasks().add(new DailyTask(description, difficulty));
+    }
+
+    public List<Task> getTasks() {
+        return player.getQuestLog();
+    }
+
     public List<Task> getAllTasks() {
-        return tasks; // Return the list
+        return getTasks();
     }
 
-    // CREATE
-    // Takes the description as an argument, allowing the UI to handle input
-    public void addTask(String description) {
-        // You can add validation/logic here, like checking for duplicates
-        if (description != null && !description.trim().isEmpty()) {
-            tasks.add(new Task(description));
-        }
-    }
-
-    // READ: Get a specific task (used by Engine/UI)
     public Task getTaskByIndex(int index) {
-        if (index >= 0 && index < tasks.size()) {
-            return tasks.get(index);
+        if (index >= 0 && index < getTasks().size()) {
+            return getTasks().get(index);
         }
         return null;
     }
 
-    // TOGGLE COMPLETION (Requires an index/ID to find the task)
-    public boolean toggleCompletion(int index) {
+    public Task toggleCompletion(int index) {
         Task task = getTaskByIndex(index);
         if (task != null) {
             task.toggleCompleted();
-            // In Questify, this is where you'd return the task 
-            // to the GameEngine for EXP calculation.
-            return true;
+            return task;
         }
-        return false;
+        return null;
     }
 
-    // UPDATE
-    public boolean updateTask(int index, String newDescription) {
-        Task task = getTaskByIndex(index);
-        if (task != null) {
-            task.setDescription(newDescription);
-            return true;
+    public void removeTask(int index) {
+        if (index >= 0 && index < getTasks().size()) {
+            Task task = getTasks().get(index);
+            getTasks().remove(index);
+            System.out.println("🗑️ Quest removed: " + task.getDescription());
+        } else {
+            System.out.println("Invalid Quest Number.");
         }
-        return false;
     }
 
-    // DELETE
-    public boolean deleteTask(int index) {
-        if (index >= 0 && index < tasks.size()) {
-            tasks.remove(index);
-            return true;
-        }
-        return false;
+    public List<DailyTask> getIncompleteDailyTasks() {
+        return getTasks().stream()
+                .filter(t -> t instanceof DailyTask)
+                .map(t -> (DailyTask) t)
+                .filter(t -> !t.isCompleted())
+                .collect(Collectors.toList());
     }
-    
-    // QUESTIFY SPECIFIC: Helper for GameEngine
-    public List<Task> getIncompleteDailyTasks() {
-        // Since you only have Task for now, this would just return incomplete tasks.
-        // Later, you'd filter for DailyTask objects.
-        List<Task> incomplete = new ArrayList<>();
-        for (Task task : tasks) {
-            if (!task.isCompleted()) {
-                incomplete.add(task);
+
+    // --- End-of-Day Maintenance ---
+    public void resetDailyTasks() {
+        // 1. Handle Daily Tasks
+        for (Task task : getTasks()) {
+            if (task instanceof DailyTask) {
+                // This updates streaks and sets completed = false
+                ((DailyTask) task).endDayMaintenance();
             }
         }
-        return incomplete;
+
+        // 2. Handle To-Do Tasks (Delete them if they are finished)
+        getTasks().removeIf(t -> !(t instanceof DailyTask) && t.isCompleted());
     }
 }

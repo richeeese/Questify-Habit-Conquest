@@ -1,29 +1,65 @@
 package main;
 
-import models.*;
-import logic.*;
-import ui.*;
-import java.util.*;
+// Import necessary classes from other packages
+import models.Player;
+import logic.SaveManager;
+import logic.TaskManager;
+import logic.GameEngine;
+import ui.ConsoleMenu;
+import java.util.Scanner;
 
 public class Main {
-	public static void main(String[] args) {
-        // start screen ui using ascii
+    public static void main(String[] args) {
+        // important initializations
+        Scanner setupScanner = new Scanner(System.in);
+        Player hero;
+        TaskManager taskManager;
+        GameEngine gameEngine;
+        ConsoleMenu menu;
 
-        // initialize and get a player name
-        Scanner input = new Scanner(System.in);
-        System.out.print("Enter your player name: ");
-        Player player = new Player(input.nextLine());
+        boolean isNewGame = false;
 
-        // task manager init
-        TaskManager taskManager = new TaskManager(player);
+        // attempt to load existing game
+        Player loadedPlayer = SaveManager.loadGame();
+        if (loadedPlayer != null) {
+            hero = loadedPlayer;
+            System.out.println("=========================================================");
+            System.out.println("\t   W E L C O M E  T O  Q U E S T I F Y ");
+            System.out.println("=========================================================");
+            System.out.println("Loaded existing game for hero: " + hero.getName());
+        } else {
+            System.out.println("=========================================================");
+            System.out.println("\t   W E L C O M E  T O  Q U E S T I F Y ");
+            System.out.println("=========================================================");
+            isNewGame = true;
 
-        GameEngine gameEngine = new GameEngine(player, taskManager);
+            System.out.print("Enter your Hero's Name: ");
+            String name = setupScanner.nextLine();
+            hero = new Player(name);
+        }
 
-        ConsoleMenu menu = new ConsoleMenu(player, taskManager, gameEngine); // Initialize the console menu
-        menu.start(); // Start the menu interaction
+        // initialize game components with the hero
+        System.out.println("\nInitializing game world...");
+        taskManager = new TaskManager(hero);
+        gameEngine = new GameEngine(hero, taskManager);
+        menu = new ConsoleMenu(gameEngine);
 
-        System.out.println("Exiting Questify. Goodbye, " + player.getName() + "!");
+        // creates character if new game
+        if (isNewGame) {
+            menu.runCharacterCreation();
 
-        input.close();
+            SaveManager.saveGame(hero);
+        }
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            SaveManager.saveGame(hero);
+            System.out.println("\n[System] Shutting down and saving... Safe travels, hero!");
+        }));
+
+        // start the game loop
+        System.out.println("\nStarting menu...");
+        menu.startMenu();
+
+        setupScanner.close();
     }
 }

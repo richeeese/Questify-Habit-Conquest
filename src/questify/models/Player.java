@@ -1,39 +1,193 @@
 package models;
 
-public class Player {
-    // ------ Player Attributes ------
+import java.io.Serializable;
+import java.util.*;
+
+public class Player implements Serializable {
     private String name;
     private int level;
     private int statPoints;
-
-    // ------ Core Attributes ------
-    private int currExp = 0;
-    private int maxExp = 20;
+    private int currExp;
+    private int maxExp;
     private int currHp;
-    private int maxHp = 50;
+    private int maxHp;
     private int currMana;
-    private int maxMana = 20;
+    private int maxMana;
+    private int baseHeal = 5;
+    private int failedDmg = 5;
 
-    // ------ Player Stats ------
-    private int str; // damage multiplier/adder
-    private int def; // damage reduction
-    private int intel; // exp gains
-    private int dex; // dodge chance
+    private List<Task> questLog;
+
+    private int dodgeCharges;
+    private final int maxDodgeCharges = 1;
+
+    private int str; // Strength (Combat Damage, Max HP scaling)
+    private int def; // Defense (Damage Reduction)
+    private int intel; // Intelligence (EXP Multiplier, Max Mana scaling)
+    private int dex; // Dexterity (Dodge/Hit Chance)
+
+    private String playerSprite;
 
     public Player(String name) {
         this.name = name;
         this.level = 1;
         this.statPoints = 0;
         this.currExp = 0;
-        this.currHp = this.maxHp;
-        this.currMana = this.maxMana;
+
+        // Base Stats
         this.str = 10;
         this.def = 10;
-        this.intel = 10;
+        this.intel = 1;
         this.dex = 10;
+
+        recalculateDerivedStats();
+
+        this.currHp = this.maxHp;
+        this.currMana = this.maxMana;
+        this.dodgeCharges = 1;
+
+        this.questLog = new ArrayList<>();
     }
 
-    // ------ Getters ------
+    // Recalculates HP and Mana when stats are updated or on level up
+    private void recalculateDerivedStats() {
+        // Derived HP and Mana based on STR and INTEL
+        int newMaxHp = 50 + (this.str * 5);
+        int newMaxMana = 20 + (this.intel * 1);
+
+        // Adjust current HP/Mana when max changes
+        if (newMaxHp > this.maxHp)
+            this.currHp += (newMaxHp - this.maxHp);
+        this.maxHp = newMaxHp;
+        this.currHp = Math.min(this.currHp, this.maxHp);
+
+        if (newMaxMana > this.maxMana)
+            this.currMana += (newMaxMana - this.maxMana);
+        this.maxMana = newMaxMana;
+        this.currMana = Math.min(this.currMana, this.maxMana);
+
+        // Update Max EXP for next level
+        this.maxExp = 20 + (this.level * 10);
+    }
+
+    public boolean addExp(int exp) {
+        this.currExp += exp;
+        boolean leveledUp = false;
+
+        // Loop: While player has enough EXP to level up
+        while (this.currExp >= this.maxExp) {
+            levelUp();
+            leveledUp = true;
+        }
+        return leveledUp;
+    }
+
+    public void removeExp(int exp) {
+        this.currExp -= exp;
+        System.out.println("🔻 " + this.name + " lost " + exp + " EXP.");
+
+        // Check if EXP went negative
+        while (this.currExp < 0) {
+            if (this.level > 1) {
+                levelDown(); // Reverses a level
+            } else {
+                // If Level 1, just cap at 0
+                this.currExp = 0;
+                break;
+            }
+        }
+    }
+
+    public void gainLevel() {
+        this.level++;
+
+        // Grant stat points
+        this.statPoints += (this.level % 5 == 0) ? 2 : 1;
+
+        // Update Max EXP / HP / Mana for the new level
+        recalculateDerivedStats();
+
+        // Free Heal
+        this.currHp = this.maxHp;
+        this.currMana = this.maxMana;
+
+        System.out.println("🎉 BONUS LEVEL! You are now level " + this.level);
+    }
+
+    private void levelUp() {
+        this.currExp -= this.maxExp;
+        this.level++;
+
+        // Grant stat points
+        this.statPoints += (this.level % 5 == 0) ? 2 : 1;
+
+        // Set new Max stats
+        recalculateDerivedStats();
+
+        // Full heal
+        this.currHp = this.maxHp;
+        this.currMana = this.maxMana;
+
+    }
+
+    private void levelDown() {
+        this.level--;
+        int prevMaxExp = 20 + (this.level * 10);
+        this.currExp += prevMaxExp;
+        int pointsToRemove = ((this.level + 1) % 5 == 0) ? 2 : 1;
+        this.statPoints -= pointsToRemove;
+
+        recalculateDerivedStats();
+
+        // Clamp HP/Mana if player exceed the lower max limits
+        this.currHp = Math.min(this.currHp, this.maxHp);
+        this.currMana = Math.min(this.currMana, this.maxMana);
+
+        System.out.println("📉 LEVEL LOST! You dropped back to level " + this.level);
+    }
+
+    public int takeDamage(int rawDamage) {
+        int damageReduction = this.def / 2;
+        int actualDamage = Math.max(1, rawDamage - damageReduction);
+        this.currHp -= actualDamage;
+        if (this.currHp < 0)
+            this.currHp = 0;
+        return actualDamage;
+    }
+
+    public void failedTask() {
+        this.currHp = this.currHp - failedDmg;
+
+        if (this.currHp < 0) {
+            this.currHp = 0;
+        }
+    }
+
+    // Used for End Day reset
+    public void rest() {
+        this.currMana = this.maxMana;
+        this.currHp = Math.min(this.currHp + baseHeal, this.maxHp);
+    }
+
+    public boolean isDefeated() {
+        return this.currHp <= 0;
+    }
+
+    // --- Dodge Charge Methods ---
+    public boolean hasDodgeAvailable() {
+        return this.dodgeCharges > 0;
+    }
+
+    public void useDodgeCharge() {
+        if (this.dodgeCharges > 0)
+            this.dodgeCharges--;
+    }
+
+    public void replenishDodgeCharge(int amount) {
+        this.dodgeCharges = Math.min(this.maxDodgeCharges, this.dodgeCharges + amount);
+    }
+
+    // --- Getters and Setters ---
     public String getName() {
         return name;
     }
@@ -44,6 +198,10 @@ public class Player {
 
     public int getStatPoints() {
         return statPoints;
+    }
+
+    public void setStatPoints(int statPoints) {
+        this.statPoints = statPoints;
     }
 
     public int getCurrExp() {
@@ -68,7 +226,11 @@ public class Player {
 
     public int getMaxMana() {
         return maxMana;
-    }  
+    }
+
+    public int getDodgeCharges() {
+        return dodgeCharges;
+    }
 
     public int getStr() {
         return str;
@@ -86,27 +248,85 @@ public class Player {
         return dex;
     }
 
-    // ------ Setters ------
-    public void setCurrExp(int currExp) {
-        this.currExp = currExp;
+    public String getPlayerSprite() {
+        return playerSprite;
     }
 
-    public void setCurrHp(int currHp) {
-        this.currHp = currHp;
+    public List<Task> getQuestLog() {
+        return questLog;
     }
 
-    public void setCurrMana(int currMana) {
-        this.currMana = currMana;
+    public void setStr(int str) {
+        this.str = str;
+        recalculateDerivedStats();
     }
 
-    // ------ Adders ------
-    public void addExp(int exp) {
-        this.currExp += exp;
+    public void setDef(int def) {
+        this.def = def;
     }
 
-    public void addStatPoints(int points) {
-        this.statPoints += points;
+    public void setIntel(int intel) {
+        this.intel = intel;
+        recalculateDerivedStats();
     }
 
-    
+    public void setDex(int dex) {
+        this.dex = dex;
+    }
+
+    public void setPlayerSprite(int choice) {
+        if (choice == 1) {
+            this.playerSprite = "                              \r\n" + //
+                    "             ░▓▓▓▒            \r\n" + //
+                    "         ░▓▓▓▓▓▓▒▓▓▓▓▓░       \r\n" + //
+                    "     ░░▒▓▓▓▓▓▒▒▒▒▒▒▒▒▓▓▒░     \r\n" + //
+                    "     ░█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░    \r\n" + //
+                    "     ░█▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▒█░    \r\n" + //
+                    "     ░█▓▓▓▓▒▒▓▒▓▓▒▒▒▒█▓▒█░    \r\n" + //
+                    "     ░█▓▓▓▓▒▒▒▒▒░░▒▒░▒▒▒█░    \r\n" + //
+                    "     ░█▓▓▓▓▓▓▓▒▒░░░░░▒▒▒█░    \r\n" + //
+                    "     ▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▒░   \r\n" + //
+                    "     ░█▓▓▓▓█████████████░░    \r\n" + //
+                    "     ▒▓██▓▓▓▓▓▓▓▒▒▒▓▓▓█░      \r\n" + //
+                    "   ░▒▓█░█▓▓▓▓▓▓▓▓▓▓▓▓▓█░      \r\n" + //
+                    "   ▒▓▒   ░██▓    ░▒██░        \r\n" + //
+                    "         ░░░░    ░░░░         \r\n" + //
+                    "                              ";
+        } else if (choice == 2) {
+            this.playerSprite = "        ░░░▓███▓░░            \r\n" + //
+                    "      ░░▓▓▓▓▓▒▒▓▓█▒           \r\n" + //
+                    "      ▒███▓▓▓▓▒▒▒▓█▒░░░       \r\n" + //
+                    "       ░░▒▓▓▓▓▒▒▒▒▓███▒▒▒▒▒░░ \r\n" + //
+                    "       ░▓█▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓█▒░ \r\n" + //
+                    "  ░░▒██▓▓▓▓▓▓▓▓▓▓██████▓░░    \r\n" + //
+                    "  ░█▓▓▓█████▓▓▓▒▒▒▒▒▓▓██▓░    \r\n" + //
+                    "      ▒█▓▓█▒░▒▓░░░░▒█▒██▓░    \r\n" + //
+                    "    ░▓▓██████▓▓▓▓▓▓▓▓▓█▓▒░    \r\n" + //
+                    "    ░▒█▓██▓▓▓▓▓▓▓▓▓▓▓▓▓░░     \r\n" + //
+                    "     ░░░▓█████████████░░      \r\n" + //
+                    "    ░▒██▓▓▓▓▒▒▓▓███▓▒▓▓▓░     \r\n" + //
+                    "    ░▒▓▓▓▓▓▓▓████████▓▓▒░     \r\n" + //
+                    "         ░▓█▒░   ░▓█▒░        \r\n" + //
+                    "          ░░░     ░░░         ";
+        }
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "Name: %s | Level: %d\n" +
+                        "HP: %d/%d (Health) | Mana: %d/%d (Energy)\n" +
+                        "EXP: %d/%d | Stat Points Available: %d\n" +
+                        "Dodge Charges: %d/%d\n" +
+                        "--------------------------------\n" +
+                        "STR (Attack):  %d\n" +
+                        "DEF (Defense): %d\n" +
+                        "INT (Intel):   %d\n" +
+                        "DEX (Agility): %d",
+                name, level,
+                currHp, maxHp, currMana, maxMana,
+                currExp, maxExp, statPoints,
+                dodgeCharges, maxDodgeCharges,
+                str, def, intel, dex);
+    }
 }
