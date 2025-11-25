@@ -158,11 +158,39 @@ public class ConsoleMenu implements GameUI {
 
         boolean isDaily = dailyInput.equalsIgnoreCase("Y");
 
-        System.out.print("Enter Description: ");
-        String desc = sc.nextLine();
+        String desc;
+        while (true) {
+            System.out.print("Enter Description: ");
+            desc = sc.nextLine().trim(); // .trim() removes spaces
 
-        System.out.print("Enter Difficulty (Easy, Medium, Hard): ");
-        String diff = sc.nextLine();
+            if (desc.equals("0"))
+                return; // Allow canceling here too
+
+            if (!desc.isEmpty()) {
+                break; // Input is valid, exit the loop
+            }
+
+            System.out.println("⚠️ Description cannot be empty. Please try again.");
+        }
+
+        String diff;
+        while (true) {
+            System.out.print("Enter Difficulty (Easy, Medium, Hard): ");
+            diff = sc.nextLine().trim();
+
+            if (diff.equals("0"))
+                return;
+
+            // Check if input matches one of the valid words (case insensitive)
+            if (diff.equalsIgnoreCase("Easy") ||
+                    diff.equalsIgnoreCase("Medium") ||
+                    diff.equalsIgnoreCase("Hard")) {
+                break; // Valid
+            }
+
+            System.out.println("⚠️ Invalid difficulty. Please type Easy, Medium, or Hard.");
+        }
+        ;
 
         if (isDaily) {
             gameEngine.getTaskManager().addDailyTask(desc, diff);
@@ -391,7 +419,7 @@ public class ConsoleMenu implements GameUI {
                                                                                                                                  // here
         System.out.println("\n(Press Enter to continue...)");
         sc.nextLine();
-        
+
         System.out.println("Choose your avatar form from the ones below:"); // put quirky sprite selection passage here
         displaySprite1();
 
@@ -402,10 +430,10 @@ public class ConsoleMenu implements GameUI {
                                                                                                                                                                                                   // character"
                                                                                                                                                                                                   // or
                                                                                                                                                                                                   // something
-        
+
         System.out.println("\n(Press Enter to continue...)");
         sc.nextLine();
-        
+
         displaySprite2();
         System.out.println(
                 "This avatar resembles a swift and quick-witted warrior.\nShe has survived the invasion of procrastination throughout the land and wants you to aid her in warding it off!"); // "this
@@ -432,37 +460,37 @@ public class ConsoleMenu implements GameUI {
 
     private void displaySprite1() {
         System.out.println("                              \r\n" + //
-                        "             ░░░░░░░          \r\n" + //
-                        "          ░░░▒▓▓▓▓▓▒▒░░░      \r\n" + //
-                        "        ░░▒▓▓▓▓▓▒▒▒▒▓▓▓▒░░    \r\n" + //
-                        "       ░▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒░░   \r\n" + //
-                        "       ░▒▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓░░   \r\n" + //
-                        "       ░▒▓▓▓▒▒▒▒▓▒▒▒▒▓▒▒▓░░   \r\n" + //
-                        "       ░▒▓▓▓▓▓▒▒▒▒▒▒▒░▒▒▓░░   \r\n" + //
-                        "      ░░▒▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▓░░   \r\n" + //
-                        "      ░░▓▓▓▒▓▓▓▓▓▓▓▓▓▓▓▓▒░░   \r\n" + //
-                        "      ░░▒▓█▓▓▓▓▓▓▓▓▓▓▓█▒░░    \r\n" + //
-                        "    ░░░▒▓▓█▓▓▓▓▓▓▓▓▓▓▓█▒░     \r\n" + //
-                        "    ░░▒▒░░░▒█▓▒░░░▒██▒░░░     \r\n" + //
-                        "          ░░░░░   ░░░░        \r\n" + //
-                        "                              ");
+                "             ░░░░░░░          \r\n" + //
+                "          ░░░▒▓▓▓▓▓▒▒░░░      \r\n" + //
+                "        ░░▒▓▓▓▓▓▒▒▒▒▓▓▓▒░░    \r\n" + //
+                "       ░▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒░░   \r\n" + //
+                "       ░▒▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓░░   \r\n" + //
+                "       ░▒▓▓▓▒▒▒▒▓▒▒▒▒▓▒▒▓░░   \r\n" + //
+                "       ░▒▓▓▓▓▓▒▒▒▒▒▒▒░▒▒▓░░   \r\n" + //
+                "      ░░▒▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▓░░   \r\n" + //
+                "      ░░▓▓▓▒▓▓▓▓▓▓▓▓▓▓▓▓▒░░   \r\n" + //
+                "      ░░▒▓█▓▓▓▓▓▓▓▓▓▓▓█▒░░    \r\n" + //
+                "    ░░░▒▓▓█▓▓▓▓▓▓▓▓▓▓▓█▒░     \r\n" + //
+                "    ░░▒▒░░░▒█▓▒░░░▒██▒░░░     \r\n" + //
+                "          ░░░░░   ░░░░        \r\n" + //
+                "                              ");
     }
 
     private void displaySprite2() {
         System.out.println("        ░░░▓███▓░░            \r\n" + //
-                        "      ░░▓▓▓▓▓▒▒▓▓█▒           \r\n" + //
-                        "      ▒███▓▓▓▓▒▒▒▓█▒░░░       \r\n" + //
-                        "       ░░▒▓▓▓▓▒▒▒▒▓███▒▒▒▒▒░░ \r\n" + //
-                        "       ░▓█▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓█▒░ \r\n" + //
-                        "  ░░▒██▓▓▓▓▓▓▓▓▓▓██████▓░░    \r\n" + //
-                        "  ░█▓▓▓█████▓▓▓▒▒▒▒▒▓▓██▓░    \r\n" + //
-                        "      ▒█▓▓█▒░▒▓░░░░▒█▒██▓░    \r\n" + //
-                        "    ░▓▓██████▓▓▓▓▓▓▓▓▓█▓▒░    \r\n" + //
-                        "    ░▒█▓██▓▓▓▓▓▓▓▓▓▓▓▓▓░░     \r\n" + //
-                        "     ░░░▓█████████████░░      \r\n" + //
-                        "    ░▒██▓▓▓▓▒▒▓▓███▓▒▓▓▓░     \r\n" + //
-                        "    ░▒▓▓▓▓▓▓▓████████▓▓▒░     \r\n" + //
-                        "         ░▓█▒░   ░▓█▒░        \r\n" + //
-                        "          ░░░     ░░░         ");
+                "      ░░▓▓▓▓▓▒▒▓▓█▒           \r\n" + //
+                "      ▒███▓▓▓▓▒▒▒▓█▒░░░       \r\n" + //
+                "       ░░▒▓▓▓▓▒▒▒▒▓███▒▒▒▒▒░░ \r\n" + //
+                "       ░▓█▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓█▒░ \r\n" + //
+                "  ░░▒██▓▓▓▓▓▓▓▓▓▓██████▓░░    \r\n" + //
+                "  ░█▓▓▓█████▓▓▓▒▒▒▒▒▓▓██▓░    \r\n" + //
+                "      ▒█▓▓█▒░▒▓░░░░▒█▒██▓░    \r\n" + //
+                "    ░▓▓██████▓▓▓▓▓▓▓▓▓█▓▒░    \r\n" + //
+                "    ░▒█▓██▓▓▓▓▓▓▓▓▓▓▓▓▓░░     \r\n" + //
+                "     ░░░▓█████████████░░      \r\n" + //
+                "    ░▒██▓▓▓▓▒▒▓▓███▓▒▓▓▓░     \r\n" + //
+                "    ░▒▓▓▓▓▓▓▓████████▓▓▒░     \r\n" + //
+                "         ░▓█▒░   ░▓█▒░        \r\n" + //
+                "          ░░░     ░░░         ");
     }
 }
