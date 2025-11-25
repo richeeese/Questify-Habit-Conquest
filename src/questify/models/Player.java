@@ -1,7 +1,5 @@
 package models;
 
-// NOTE: No import java.util.UUID is needed here as this class does not generate a UUID.
-
 public class Player {
     private String name;
     private int level;
@@ -75,25 +73,52 @@ public class Player {
         return leveledUp;
     }
 
+    public void removeExp(int exp) {
+        this.currExp -= exp;
+
+        // MERCIFUL LOGIC:
+        // If EXP drops below zero, just set it to 0.
+        // Do NOT decrease the level. Do NOT remove stats.
+        if (this.currExp < 0) {
+            this.currExp = 0;
+            System.out.println("⚠️ EXP drained to 0 (Level retained).");
+        } else {
+            System.out.println("🔻 " + this.name + " lost " + exp + " EXP.");
+        }
+    }
+
     public void gainLevel() {
-        levelUp();
+        this.level++;
+
+        // Grant stat points
+        this.statPoints += (this.level % 5 == 0) ? 2 : 1;
+
+        // Update Max EXP / HP / Mana for the new level
+        recalculateDerivedStats();
+
+        // Free Heal
+        this.currHp = this.maxHp;
+        this.currMana = this.maxMana;
+
+        System.out.println("🎉 BONUS LEVEL! You are now level " + this.level);
     }
 
     private void levelUp() {
-        // 1. CRITICAL FIX: Subtract the cost BEFORE changing the level
-        // We pay the cost of the CURRENT level (e.g., Level 3 cost)
+        // 1. FIX: Pay the cost FIRST (using the OLD maxExp)
+        // Example: If you have 60 Exp and need 50, we subtract 50 here.
         this.currExp -= this.maxExp;
 
-        // 2. Now increase the level
+        // 2. NOW increase the level
         this.level++;
 
-        // 3. Grant Stat Points
+        // 3. Grant stat points
         this.statPoints += (this.level % 5 == 0) ? 2 : 1;
 
-        // 4. Calculate new Max EXP and Stats for the NEW level
+        // 4. Update Max EXP and Stats for the NEW level
+        // This will set the NEW maxExp (e.g., to 60) AFTER we already subtracted.
         recalculateDerivedStats();
 
-        // 5. Restore Health/Mana
+        // 5. Full heal
         this.currHp = this.maxHp;
         this.currMana = this.maxMana;
 
@@ -110,12 +135,16 @@ public class Player {
 
     public void failedTask() {
         this.currHp = this.currHp - failedDmg;
+
+        if (this.currHp < 0) {
+            this.currHp = 0;
+        }
     }
 
     // Used for End Day reset
     public void rest() {
         this.currMana = this.maxMana;
-        this.currHp = this.currHp + baseHeal;
+        this.currHp = Math.min(this.currHp + baseHeal, this.maxHp);
     }
 
     public boolean isDefeated() {

@@ -50,6 +50,7 @@ public class ConsoleMenu {
             System.out.println("3. 👤 Character Sheet & Stats");
             System.out.println("4. 💪 Allocate Stat Points");
 
+            // [Boss Feature] Dynamic Menu Option
             if (gameEngine.getCurrentBoss() != null && !gameEngine.getCurrentBoss().isDefeated()) {
                 System.out.println("5. ⚔️ FIGHT BOSS (" + gameEngine.getCurrentBoss().getName() + ")");
             } else {
@@ -76,6 +77,7 @@ public class ConsoleMenu {
                     handleStatAllocation();
                     break;
                 case "5":
+                    // [Boss Feature] Logic to initiate combat
                     if (gameEngine.getCurrentBoss() != null && !gameEngine.getCurrentBoss().isDefeated()) {
                         gameEngine.initiateCombat();
                     } else {
@@ -109,8 +111,8 @@ public class ConsoleMenu {
             System.out.println("\n--- 📜 QUEST LOG MENU ---");
             System.out.println("L. List all tasks");
             System.out.println("C. Create new task");
-            System.out.println("R. Remove a To-Do task");
-            System.out.println("B. Back to Main Menu"); // Added Back Option
+            System.out.println("R. Remove a task");
+            System.out.println("B. Back to Main Menu");
             System.out.print("Choice: ");
             String subChoice = sc.nextLine().toUpperCase();
 
@@ -121,7 +123,7 @@ public class ConsoleMenu {
             } else if (subChoice.equals("R")) {
                 removeTask();
             } else if (subChoice.equals("B")) {
-                inQuestMenu = false; // Breaks the loop and goes back to Main Menu
+                inQuestMenu = false;
             } else {
                 System.out.println("Invalid choice.");
             }
@@ -152,7 +154,7 @@ public class ConsoleMenu {
         String dailyInput = sc.nextLine();
 
         if (dailyInput.equals("0"))
-            return; // Back Feature
+            return;
 
         boolean isDaily = dailyInput.equalsIgnoreCase("Y");
 
@@ -175,11 +177,10 @@ public class ConsoleMenu {
         if (gameEngine.getTaskManager().getAllTasks().isEmpty())
             return;
 
-        // Updated prompt to allow back
         int index = getValidInt("Enter the To-Do Quest Number to remove (0 to Back): ");
 
         if (index == 0)
-            return; // Back Feature
+            return;
 
         gameEngine.getTaskManager().removeTask(index - 1);
     }
@@ -190,20 +191,23 @@ public class ConsoleMenu {
         if (gameEngine.getTaskManager().getAllTasks().isEmpty())
             return;
 
-        // Updated prompt to allow back
         int index = getValidInt("Enter the Quest Number to toggle completion (0 to Back): ");
-
         if (index == 0)
-            return; // Back Feature
+            return;
 
         Task t = gameEngine.getTaskManager().toggleCompletion(index - 1);
 
         if (t != null) {
+            // 🔴 CRITICAL FIX:
+            // Pass the task to the Engine regardless of whether it's Done or Undone.
+            // The Engine handles the math (Adding EXP if Done, Removing EXP if Undone).
+            gameEngine.playerCompletesTask(t);
+
+            // Optional: UI Feedback (The Engine already prints the math logs)
             if (t.isCompleted()) {
-                System.out.println("⚔️ Quest Completed!");
-                gameEngine.playerCompletesTask(t);
+                System.out.println("   (Marked [X])");
             } else {
-                System.out.println("Marked as incomplete. EXP will be lost.");
+                System.out.println("   (Unmarked [ ])");
             }
         } else {
             System.out.println("Invalid Quest Number.");
@@ -215,6 +219,7 @@ public class ConsoleMenu {
         System.out.println("\n--- 👤 HERO STATUS ---");
         System.out.println(gameEngine.getPlayer());
 
+        // [Boss Feature] Display current boss stats on character sheet
         if (gameEngine.getCurrentBoss() != null && !gameEngine.getCurrentBoss().isDefeated()) {
             System.out.println("\n--- 🔥 CURRENT THREAT ---");
             System.out.printf("Boss: %s\nHP: %d/%d\nAttack Power: %d\n",
@@ -242,7 +247,6 @@ public class ConsoleMenu {
 
         String stat = sc.nextLine();
 
-        // Back Feature
         if (stat.equals("0") || stat.equalsIgnoreCase("Back"))
             return;
 
@@ -255,15 +259,9 @@ public class ConsoleMenu {
 
         if (gameEngine.getPlayer().isDefeated()) {
             System.out.println("⛑️ Critical rest taken. Your hero recovers from their wounds.");
-            // Heal/Reset happens below
         } else {
+            // 1. Handle Daily Tasks
             List<DailyTask> failures = gameEngine.getTaskManager().getIncompleteDailyTasks();
-
-            // Debug: show what the manager considers incomplete dailies
-            System.out.println("(DEBUG) Incomplete Daily Tasks found: " + failures.size());
-            for (DailyTask f : failures) {
-                System.out.println("(DEBUG) - '" + f.getDescription() + "' completed? " + f.isCompleted());
-            }
 
             if (failures.isEmpty()) {
                 System.out.println("✨ Perfect day! All daily obligations met or completed. No penalties applied.");
@@ -303,44 +301,48 @@ public class ConsoleMenu {
             }
         }
 
-        // Also apply penalties for incomplete To-Do tasks (non-dailies)
-        List<Task> incompleteTodos = gameEngine.getTaskManager().getAllTasks().stream()
-                .filter(t -> !(t instanceof DailyTask))
-                .filter(t -> !t.isCompleted())
-                .collect(Collectors.toList());
+        // 2. Handle To-Do Tasks (Non-Daily)
+        // If player is not already dead from dailies, check To-Dos
+        if (!gameEngine.getPlayer().isDefeated()) {
+            List<Task> incompleteTodos = gameEngine.getTaskManager().getAllTasks().stream()
+                    .filter(t -> !(t instanceof DailyTask))
+                    .filter(t -> !t.isCompleted())
+                    .collect(Collectors.toList());
 
-        if (!incompleteTodos.isEmpty()) {
-            System.out.println(
-                    "⚠️ You also have " + incompleteTodos.size() + " incomplete To-Do(s). Penalties may apply.");
-            System.out.println("----------------------------------------");
-            for (Task todo : incompleteTodos) {
-                System.out.println("\n⚠️ Failed To-Do: " + todo.getDescription());
+            if (!incompleteTodos.isEmpty()) {
+                System.out.println(
+                        "⚠️ You also have " + incompleteTodos.size() + " incomplete To-Do(s). Penalties may apply.");
+                System.out.println("----------------------------------------");
+                for (Task todo : incompleteTodos) {
+                    System.out.println("\n⚠️ Failed To-Do: " + todo.getDescription());
 
-                boolean dodged = false;
-                if (gameEngine.getPlayer().hasDodgeAvailable()) {
-                    System.out.println("   You have " + gameEngine.getPlayer().getDodgeCharges() + " Dodge Charge(s).");
-                    System.out.print("   Use a dodge to avoid penalty? [Y/N]: ");
-                    String choice = sc.nextLine();
+                    boolean dodged = false;
+                    if (gameEngine.getPlayer().hasDodgeAvailable()) {
+                        System.out.println(
+                                "   You have " + gameEngine.getPlayer().getDodgeCharges() + " Dodge Charge(s).");
+                        System.out.print("   Use a dodge to avoid penalty? [Y/N]: ");
+                        String choice = sc.nextLine();
 
-                    if (choice.equalsIgnoreCase("Y")) {
-                        gameEngine.resolveFailedTask(todo, true);
-                        dodged = true;
+                        if (choice.equalsIgnoreCase("Y")) {
+                            gameEngine.resolveFailedTask(todo, true);
+                            dodged = true;
+                        }
+                    } else {
+                        System.out.println("   (No Dodge Charges remaining. Penalty is unavoidable.)");
                     }
-                } else {
-                    System.out.println("   (No Dodge Charges remaining. Penalty is unavoidable.)");
-                }
 
-                if (!dodged) {
-                    gameEngine.resolveFailedTask(todo, false);
-                }
+                    if (!dodged) {
+                        gameEngine.resolveFailedTask(todo, false);
+                    }
 
-                if (gameEngine.getPlayer().isDefeated()) {
-                    System.out.println(
-                            "\n💀 Your hero collapses from the stress of failure! You must rest to survive.");
-                    break;
+                    if (gameEngine.getPlayer().isDefeated()) {
+                        System.out.println(
+                                "\n💀 Your hero collapses from the stress of failure! You must rest to survive.");
+                        break;
+                    }
                 }
+                System.out.println("----------------------------------------");
             }
-            System.out.println("----------------------------------------");
         }
 
         // Finalize day: rest and reset tasks/charges

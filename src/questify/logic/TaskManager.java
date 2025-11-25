@@ -53,12 +53,8 @@ public class TaskManager {
     public void removeTask(int index) {
         if (index >= 0 && index < allTasks.size()) {
             Task task = allTasks.get(index);
-            if (task instanceof DailyTask) {
-                System.out.println("Cannot remove a Daily Task. It will reset at the end of the day.");
-            } else {
-                allTasks.remove(index);
-                System.out.println("🗑️ To-Do Quest removed: " + task.getDescription());
-            }
+            allTasks.remove(index);
+            System.out.println("🗑️ Quest removed: " + task.getDescription());
         } else {
             System.out.println("Invalid Quest Number.");
         }
@@ -74,13 +70,20 @@ public class TaskManager {
 
     // --- End-of-Day Maintenance ---
     public void resetDailyTasks() {
+        // 1. Handle Daily Tasks (Reset them, don't delete them)
         for (Task task : allTasks) {
             if (task instanceof DailyTask) {
+                // This updates streaks and sets completed = false
                 ((DailyTask) task).endDayMaintenance();
             }
         }
 
-        // Cleanup: Remove completed To-dos
+        // 2. Handle To-Do Tasks (Delete them if they are finished)
+        // "Remove if it is NOT a DailyTask AND it IS Completed"
         allTasks.removeIf(t -> !(t instanceof DailyTask) && t.isCompleted());
+
+        // OPTIONAL: If you want ALL To-Dos to vanish (even failed ones), use this
+        // instead:
+        // allTasks.removeIf(t -> !(t instanceof DailyTask));
     }
 }
