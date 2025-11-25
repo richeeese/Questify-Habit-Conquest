@@ -1,6 +1,7 @@
 package models;
 
 import java.io.Serializable;
+import java.util.*;
 
 public class Player implements Serializable{
     private String name;
@@ -14,6 +15,8 @@ public class Player implements Serializable{
     private int maxMana;
     private int baseHeal = 5;
     private int failedDmg = 5;
+
+    private List<Task> questLog;
 
     private int dodgeCharges;
     private final int maxDodgeCharges = 1;
@@ -42,6 +45,8 @@ public class Player implements Serializable{
         this.currHp = this.maxHp;
         this.currMana = this.maxMana;
         this.dodgeCharges = 1;
+
+        this.questLog = new ArrayList<>();
     }
 
     // Recalculates HP and Mana when stats are updated or on level up
@@ -79,15 +84,17 @@ public class Player implements Serializable{
 
     public void removeExp(int exp) {
         this.currExp -= exp;
+        System.out.println("🔻 " + this.name + " lost " + exp + " EXP.");
 
-        // MERCIFUL LOGIC:
-        // If EXP drops below zero, just set it to 0.
-        // Do NOT decrease the level. Do NOT remove stats.
-        if (this.currExp < 0) {
-            this.currExp = 0;
-            System.out.println("⚠️ EXP drained to 0 (Level retained).");
-        } else {
-            System.out.println("🔻 " + this.name + " lost " + exp + " EXP.");
+        // Check if EXP went negative
+        while (this.currExp < 0) {
+            if (this.level > 1) {
+                levelDown(); // Reverses a level
+            } else {
+                // If Level 1, just cap at 0
+                this.currExp = 0;
+                break;
+            }
         }
     }
 
@@ -127,6 +134,32 @@ public class Player implements Serializable{
         this.currMana = this.maxMana;
 
         System.out.println("🎉 LEVEL UP! You are now level " + this.level);
+    }
+
+    private void levelDown() {
+        this.level--;
+
+        // Calculate what the Max EXP was at the previous level
+        // Formula: 20 + (level * 10)
+        int prevMaxExp = 20 + (this.level * 10);
+
+        // Wrap the negative current EXP back to the positive range of the previous
+        // level
+        // Example: If currExp is -10, and prevMax was 50. New currExp = 40.
+        this.currExp += prevMaxExp;
+
+        // Remove the stat points that were gained
+        // Note: Check (level + 1) because we just decremented
+        int pointsToRemove = ((this.level + 1) % 5 == 0) ? 2 : 1;
+        this.statPoints -= pointsToRemove;
+
+        recalculateDerivedStats();
+
+        // Clamp HP/Mana if they now exceed the lower max limits
+        this.currHp = Math.min(this.currHp, this.maxHp);
+        this.currMana = Math.min(this.currMana, this.maxMana);
+
+        System.out.println("📉 LEVEL LOST! You dropped back to level " + this.level);
     }
 
     public int takeDamage(int rawDamage) {
@@ -240,6 +273,10 @@ public class Player implements Serializable{
 
     public String getPlayerSprite() {
         return playerSprite;
+    }
+
+    public List<Task> getQuestLog() {
+        return questLog;
     }
 
     public void setStr(int str) {

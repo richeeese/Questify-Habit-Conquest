@@ -46,7 +46,7 @@ public class ConsoleMenu implements GameUI {
 
             // Regular menu options
             System.out.println("1. 📜 Quest Log (List/Create/Remove)");
-            System.out.println("2. ✅ Complete a Quest");
+            System.out.println("2. ✅ Toggle Quest Completion");
             System.out.println("3. 👤 Character Sheet & Stats");
             System.out.println("4. 💪 Allocate Stat Points");
 

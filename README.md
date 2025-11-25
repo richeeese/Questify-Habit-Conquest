@@ -63,4 +63,4 @@ It showcases the use of Object-Oriented Programming(OOP) through a console-based
             ConsoleMenu.java
             GameUI.java
 ```
-
+- 'Main.java' - Entry point of the program

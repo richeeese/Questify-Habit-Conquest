@@ -3,40 +3,42 @@ package logic;
 import models.Player;
 import models.Task;
 import models.DailyTask;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class TaskManager {
 
-    private final List<Task> allTasks;
+    private Player player;
 
     public TaskManager(Player player) {
-        this.allTasks = new ArrayList<>();
-        // Default tasks removed as requested. Game starts empty.
+        this.player = player;
     }
 
     // --- Public Task Management Methods ---
 
     public void addTask(Task task) {
-        allTasks.add(task);
+        getTasks().add(task);
     }
 
     public void addTask(String description, String difficulty) {
-        this.allTasks.add(new Task(description, difficulty));
+        getTasks().add(new Task(description, difficulty));
     }
 
     public void addDailyTask(String description, String difficulty) {
-        this.allTasks.add(new DailyTask(description, difficulty));
+        getTasks().add(new DailyTask(description, difficulty));
+    }
+
+    public List<Task> getTasks() {
+        return player.getQuestLog();
     }
 
     public List<Task> getAllTasks() {
-        return allTasks;
+        return getTasks();
     }
 
     public Task getTaskByIndex(int index) {
-        if (index >= 0 && index < allTasks.size()) {
-            return allTasks.get(index);
+        if (index >= 0 && index < getTasks().size()) {
+            return getTasks().get(index);
         }
         return null;
     }
@@ -51,9 +53,9 @@ public class TaskManager {
     }
 
     public void removeTask(int index) {
-        if (index >= 0 && index < allTasks.size()) {
-            Task task = allTasks.get(index);
-            allTasks.remove(index);
+        if (index >= 0 && index < getTasks().size()) {
+            Task task = getTasks().get(index);
+            getTasks().remove(index);
             System.out.println("🗑️ Quest removed: " + task.getDescription());
         } else {
             System.out.println("Invalid Quest Number.");
@@ -61,7 +63,7 @@ public class TaskManager {
     }
 
     public List<DailyTask> getIncompleteDailyTasks() {
-        return allTasks.stream()
+        return getTasks().stream()
                 .filter(t -> t instanceof DailyTask)
                 .map(t -> (DailyTask) t)
                 .filter(t -> !t.isCompleted())
@@ -71,7 +73,7 @@ public class TaskManager {
     // --- End-of-Day Maintenance ---
     public void resetDailyTasks() {
         // 1. Handle Daily Tasks (Reset them, don't delete them)
-        for (Task task : allTasks) {
+        for (Task task : getTasks()) {
             if (task instanceof DailyTask) {
                 // This updates streaks and sets completed = false
                 ((DailyTask) task).endDayMaintenance();
@@ -80,7 +82,7 @@ public class TaskManager {
 
         // 2. Handle To-Do Tasks (Delete them if they are finished)
         // "Remove if it is NOT a DailyTask AND it IS Completed"
-        allTasks.removeIf(t -> !(t instanceof DailyTask) && t.isCompleted());
+        getTasks().removeIf(t -> !(t instanceof DailyTask) && t.isCompleted());
 
         // OPTIONAL: If you want ALL To-Dos to vanish (even failed ones), use this
         // instead:
