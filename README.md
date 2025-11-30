@@ -8,11 +8,6 @@
 
 # 1. Overview and Core Concept
 
-<p align="center">
-    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;/>_________________________________<br/>
-    |########[]_________________________________><br/>
-    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\><br/>
-</p>
 
 **Questify: Habit Conquest** transforms mundane task management into an engaging, turn-based RPG experience. By gamifying daily responsibilities, the application tracks habit streaks, incentivizes consistency, and utilizes core game elements—such as experience, leveling, and combat—to drive real-world productivity.
 
