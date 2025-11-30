@@ -63,22 +63,45 @@ This project follows a standard Java package structure, separating concerns into
 
 # 4. How to Run the Program
 
-### Prerequisites
+### 🧰 System Requirements
+
 * **Java Development Kit (JDK) 17 or newer.**
-* A Java IDE (e.g., VS Code, IntelliJ IDEA) or command line access.
+* A command line interface (Terminal or Command Prompt) is required.
 
-### Running Steps
+### 🚀 Steps to Run the Application
 
-1.  **Download/Clone:** Ensure all Java files are downloaded and arranged in the corresponding package folders (`questify/logic`, `questify/models`, etc.) within your `src` directory.
-2.  **Compile & Run from Command Line (Recommended):**
-    * Navigate to your project's `src` folder.
-    * Compile the package structure (adapt file names if necessary):
-        ```bash
-        # 1. Compile all files into a 'bin' directory
-        javac -d bin questify/*/*.java questify/*/*/*.java
+This is a packaged Java application. You must compile the entire project before running the main class.
 
-        # 2. Run the main class
-        java -cp bin questify.main.Main
+1.  **Open Terminal:** Open your terminal and navigate to the **root folder** of the project (the folder containing the `src` directory).
+
+2.  **Create Output Folder:** Create a folder named `bin` to store the compiled files:
+    ```bash
+    mkdir bin
+    ```
+
+3.  **Compile Source Files:** Compile all Java files from the `src` directory into the new `bin` folder. This command handles the nested package structure:
+    ```bash
+    javac -d bin src/questify/*/*.java src/questify/*/*/*.java
+    ```
+
+4.  **Execute Program:** Run the application by executing the main class (`questify.main.Main.java`) using the classpath (`-cp`) pointing to your compiled files:
+    ```bash
+    java -cp bin questify.main.Main
+    ```
+
+5.  **Start Quest:** The console application will launch. Use the number-based menu options to create your character and start playing!
+
+### 🚀 Steps to Run
+
+1.  **Open in IDE:** Open the project folder in **VS Code**, **IntelliJ IDEA**, or your preferred Java IDE.
+2.  **Locate Main:** Navigate to the entry point file: `src/questify/main/Main.java`.
+3.  **Run Program:** Execute the program directly through your IDE's run button or by compiling and running from the terminal:
+    ```bash
+    # (Assuming you are in the project root)
+    javac -d bin src/questify/*/*.java src/questify/*/*/*.java
+    java -cp bin questify.main.Main
+    ```
+4.  **Start Quest:** Use the number-based menu in the console to create your hero, manage your tasks, and embark on your quest!
         ```
 3.  **Play:** Follow the console prompts to enter your hero's name and begin your quest!
 
