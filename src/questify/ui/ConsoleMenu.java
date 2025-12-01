@@ -41,6 +41,7 @@ public class ConsoleMenu implements GameUI {
 
                 System.out.println("\n(Press Enter to continue...)");
                 sc.nextLine();
+                clearScreen();
                 continue;
             }
 
@@ -62,6 +63,7 @@ public class ConsoleMenu implements GameUI {
             System.out.print("\nChoose an action: ");
 
             String choice = sc.nextLine();
+            clearScreen();
 
             switch (choice) {
                 case "1":
@@ -98,6 +100,7 @@ public class ConsoleMenu implements GameUI {
             if (running) {
                 System.out.println("\n(Press Enter to continue...)");
                 sc.nextLine();
+                clearScreen();
             }
         }
         sc.close();
@@ -410,6 +413,7 @@ public class ConsoleMenu implements GameUI {
 
         System.out.println("\n(Press Enter to continue...)");
         sc.nextLine();
+        clearScreen();
 
         System.out.println("Choose your avatar form from the ones below:");
         displaySprite1();
@@ -426,7 +430,7 @@ public class ConsoleMenu implements GameUI {
 
         // error handling for sprite selection
         try {
-            System.out.print("Choose your avatar (1 or 2): ");
+            System.out.print("\nChoose your avatar (1 or 2): ");
             int choice = Integer.parseInt(sc.nextLine());
             if (choice == 1 || choice == 2) {
                 gameEngine.getPlayer().setPlayerSprite(choice);
@@ -473,5 +477,12 @@ public class ConsoleMenu implements GameUI {
                 "    ░▒▓▓▓▓▓▓▓████████▓▓▒░     \r\n" + //
                 "         ░▓█▒░   ░▓█▒░        \r\n" + //
                 "          ░░░     ░░░         ");
+    }
+
+    public void clearScreen() {
+        // Clear console by printing several new lines
+        for (int i = 0; i < 50; i++) {
+            System.out.println();
+        }
     }
 }

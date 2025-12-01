@@ -42,7 +42,27 @@ The architecture of Questify is built on fundamental OOP concepts, ensuring the 
 
 This project follows a standard Java package structure, separating concerns into logical modules:
 
-📂 src ---📂 questify +---📂 logic # Core game mechanics and state controllers | GameEngine.java | SaveManager.java | TaskManager.java | +---📂 main # Entry point | Main.java | +---📂 models # Data classes and object representations | Boss.java | DailyTask.java | Player.java | Task.java | ---📂 ui # Console interaction and I/O handling ConsoleMenu.java GameUI.java
+```
+📂---src 
+    \📂---questify
+        +📂---logic // Core game mechanics and state controllers
+        |       GameEngine.java
+        |       SaveManager.java
+        |       TaskManager.java
+        |
+        +📂---main # Entry point
+        |       Main.java
+        |
+        +📂---models // Data classes and object representations
+        |       Boss.java
+        |       DailyTask.java
+        |       Player.java
+        |       Task.java
+        |
+        \📂---ui // Console interaction and I/O handling
+                ConsoleMenu.java
+                GameUI.java
+```
 
 -   `Main.java` serves as the primary application entry point, initializing all core services.
 
@@ -140,9 +160,9 @@ This project was developed by the following students for **CS 2103**.
 
 | Picture | Name | Role |
 | :---: | :--- | :--- |
-| **[Insert Picture]** | Celestial, Ritzy Leewis G. |  |
-| **[Insert Picture]** | Guillo, Rejc C. |  |
-| **[Insert Picture]** | Santiago, Francis D. |  |
+| **[Insert Picture]** | Celestial, Ritzy Leewis G. | Console UI Designer |
+| **[Insert Picture]** | Guillo, Rejc C. | Task Logic Developer |
+| **[Insert Picture]** | Santiago, Francis D. | Game Logic Developer |
 
 ### Special Thanks To
 * Our instructors for their continuous guidance and support throughout the development of this project.
@@ -163,6 +183,5 @@ Potential improvements and extensions for Questify include:
 
 # 8. References
 
-* Oracle Java Documentation (Specifically the **Java Time API** for date/time handling).
 * Principles of **Object-Oriented Programming (OOP)**.
 * **Java Collections Framework** (for `List`, `Map`, etc.).
