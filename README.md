@@ -158,11 +158,11 @@ Hero: Mr. Banana | Lvl: 1 | HP: 100/100 | Exp: 0/30 (Dodge: 1)
 
 This project was developed by the following students for **CS 2103**.
 
-| Picture | Name | Role |
-| :---: | :--- | :--- |
-| **[Insert Picture]** | Celestial, Ritzy Leewis G. | Console UI Designer |
-| **[Insert Picture]** | Guillo, Rejc C. | Task Logic Developer |
-| **[Insert Picture]** | Santiago, Francis D. | Game Logic Developer |
+| Name | Role |
+| :--- | :--- |
+| Celestial, Ritzy Leewis G. | Console UI Designer |
+| Guillo, Rejc C. | Task Logic Developer |
+| Santiago, Francis D. | Game Logic Developer |
 
 ### Special Thanks To
 * Our instructors for their continuous guidance and support throughout the development of this project.
