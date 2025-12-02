@@ -437,9 +437,9 @@ public class ConsoleMenu implements GameUI {
                 System.out.println("Selection saved!");
             } else {
                 System.out.println("Invalid choice. Default character selected.");
-                gameEngine.getPlayer().setPlayerSprite(1);
             }
         } catch (NumberFormatException e) {
+            gameEngine.getPlayer().setPlayerSprite(1);
             System.out.println("Invalid input. Default character selected.");
         }
     }
