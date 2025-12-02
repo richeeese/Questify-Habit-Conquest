@@ -22,7 +22,7 @@ public class Task implements Serializable {
     private int calculateExpReward(String difficulty) {
         return switch (difficulty.toLowerCase()) {
             case "medium" -> 10;
-            case "hard" -> 15;
+            case "hard" -> 1500;
             default -> 5; // Easy
         };
     }
